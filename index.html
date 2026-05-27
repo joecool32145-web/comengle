@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>授業分析アプリ var6.0.4</title>
+<title>授業分析アプリ var6.1.4</title>
 
 <style>
 body { font-family: sans-serif; margin: 0; }
@@ -257,6 +257,26 @@ video { width: 100%; }
 
 #detailedOutputButtons {
   display: none;
+}
+
+#inputOutputMenu {
+  display: inline-block;
+  position: relative;
+}
+
+#inputOutputMenuContent {
+  display: none;
+  margin-top: 6px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 8px;
+}
+
+#inputOutputMenuContent button,
+#inputOutputMenuContent .backupNotice,
+#inputOutputMenuContent #onlineArchivePanel {
+  margin: 3px;
 }
 
 #filterControls {
@@ -998,13 +1018,37 @@ video { width: 100%; }
     height: 38px;
   }
 }
+
+.phaseFilterArea {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.phaseFilterAreaLabel {
+  font-size: 12px;
+  color: #555;
+  margin-right: 2px;
+}
+
+.phaseFilterArea label {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
 </style>
 </head>
 
 <body>
 
 <div id="menuScreen">
-<h3>授業分析アプリ（var6.0.4）</h3>
+<h3>授業分析アプリ（var6.1.4）</h3>
 
 <input id="lessonName" placeholder="授業名">
 <select id="lessonType">
@@ -1065,7 +1109,7 @@ video { width: 100%; }
 
 <div id="appScreen" style="display:none;">
 
-<h3 id="currentLessonTitle">授業分析アプリ（var6.0.4）</h3>
+<h3 id="currentLessonTitle">授業分析アプリ（var6.1.4）</h3>
 
 <div class="controls">
 <button onclick="backToMenu()">メニューへ戻る</button>
@@ -1076,41 +1120,32 @@ video { width: 100%; }
 <label><input type="checkbox" id="topMemoToggle" onchange="togglePanel('topMemoPanel')">メモ1</label>
 <label><input type="checkbox" id="topMemoToggle2" onchange="togglePanel('topMemoPanel2')">メモ2</label>
 <label><input type="checkbox" id="memoToggle" onchange="togglePanel('memoPanel')">メモ</label>
-<button onclick="toggleInputFocusMode()" id="inputFocusModeBtn">入力集中: OFF</button>
-<button onclick="exportCSV()">CSV出力</button>
-<button onclick="toggleDetailedOutputs()">詳細出力</button>
-<button onclick="exportCurrentLessonJSON()">JSON出力</button>
-<input type="file" id="jsonInput" accept=".json,application/json" onchange="importCurrentLessonJSON(event)">
-<div class="backupNotice">このJSON出力は現在開いている授業のコメント・メモ保存用です。全授業をまとめて残す場合はメニュー画面の「全授業JSON出力」を使ってください。</div>
-<div id="detailedOutputButtons">
-<button onclick="exportUserSummaryCSV()">ユーザー別CSV出力</button>
-<button onclick="exportTagSummaryCSV()">タグ別CSV出力</button>
-<button onclick="exportNotesCSV()">メモCSV出力</button>
-<button onclick="exportAnalysisSummaryCSV()">分析サマリーCSV出力</button>
+<div id="inputOutputMenu">
+<button onclick="toggleInputOutputMenu()" id="toggleInputOutputMenuBtn">入力・出力 ▼</button>
+<div id="inputOutputMenuContent">
+  <button onclick="toggleInputFocusMode()" id="inputFocusModeBtn">入力集中: OFF</button>
+  <button onclick="exportCSV()">CSV出力</button>
+  <button onclick="toggleDetailedOutputs()">詳細出力</button>
+  <button onclick="exportCurrentLessonJSON()">JSON出力</button>
+  <input type="file" id="jsonInput" accept=".json,application/json" onchange="importCurrentLessonJSON(event)">
+  <div class="backupNotice">このJSON出力は現在開いている授業のコメント・メモ保存用です。全授業をまとめて残す場合はメニュー画面の「全授業JSON出力」を使ってください。</div>
+  <div id="detailedOutputButtons">
+  <button onclick="exportUserSummaryCSV()">ユーザー別CSV出力</button>
+  <button onclick="exportTagSummaryCSV()">タグ別CSV出力</button>
+  <button onclick="exportNotesCSV()">メモCSV出力</button>
+  <button onclick="exportAnalysisSummaryCSV()">分析サマリーCSV出力</button>
+  </div>
+  <div id="onlineArchivePanel">
+    <button onclick="exportOnlineLessonArchiveJSON()">オンライン授業JSON退避</button>
+    <button onclick="deleteOnlineLessonAfterArchive()">Firebase上のオンライン授業を削除</button>
+    <div id="onlineArchiveResult"></div>
+  </div>
+</div>
 </div>
 <div id="onlineStatusPanel">
   <div>接続状態：<span id="onlineConnectionStatus">未接続</span></div>
   <div>自分の役割：<span id="onlineUserRole">未接続</span></div>
   <div>参加者：<span id="onlineParticipantsList">なし</span></div>
-</div>
-<div id="onlineArchivePanel">
-  <button onclick="exportOnlineLessonArchiveJSON()">オンライン授業JSON退避</button>
-  <button onclick="deleteOnlineLessonAfterArchive()">Firebase上のオンライン授業を削除</button>
-  <div id="onlineArchiveResult"></div>
-</div>
-<div id="onlineCheckPanel">
-  <b>オンライン版確認チェックリスト</b>
-  <ul>
-    <li>コメント同期：別端末にコメントが反映される</li>
-    <li>リアクション同期：別端末のリアクションバーに反映される</li>
-    <li>指導案同期：別端末に指導案の変更が反映される</li>
-    <li>動画リンク同期：別端末に動画リンク・動画開始時刻が反映される</li>
-    <li>共有リンク参加：共有リンクから授業コードが自動入力される</li>
-    <li>JSON退避：オンライン授業データをJSON保存できる</li>
-    <li>JSON復元：退避JSONをローカル授業として復元できる</li>
-    <li>権限表示：作成者 / 参加者が表示される</li>
-    <li>削除制限：参加者は他人のコメントを削除できない</li>
-  </ul>
 </div>
 </div>
 
@@ -1272,13 +1307,13 @@ video { width: 100%; }
 </div>
 
 <div id="filterControls">
-<select id="phaseFilter" onchange="render()">
-  <option value="">すべての協議区分</option>
-  <option value="協議前">協議前</option>
-  <option value="協議後">協議後</option>
-  <option value="視聴後">視聴後</option>
-  <option value="区分なし">協議区分なし</option>
-</select>
+<div id="phaseFilter" class="phaseFilterArea">
+  <span class="phaseFilterAreaLabel">協議区分</span>
+  <label><input type="checkbox" value="協議前" onchange="render()">協議前</label>
+  <label><input type="checkbox" value="協議後" onchange="render()">協議後</label>
+  <label><input type="checkbox" value="視聴後" onchange="render()">視聴後</label>
+  <label><input type="checkbox" value="区分なし" onchange="render()">区分なし</label>
+</div>
 <select id="tagFilter" onchange="render()"></select>
 <select id="userFilter" onchange="render()">
   <option value="">全ユーザー</option>
@@ -1312,13 +1347,13 @@ video { width: 100%; }
 </div>
 </div>
 <div id="filterControls2">
-<select id="phaseFilter2" onchange="render()">
-  <option value="">すべての協議区分</option>
-  <option value="協議前">協議前</option>
-  <option value="協議後">協議後</option>
-  <option value="視聴後">視聴後</option>
-  <option value="区分なし">協議区分なし</option>
-</select>
+<div id="phaseFilter2" class="phaseFilterArea">
+  <span class="phaseFilterAreaLabel">協議区分</span>
+  <label><input type="checkbox" value="協議前" onchange="render()">協議前</label>
+  <label><input type="checkbox" value="協議後" onchange="render()">協議後</label>
+  <label><input type="checkbox" value="視聴後" onchange="render()">視聴後</label>
+  <label><input type="checkbox" value="区分なし" onchange="render()">区分なし</label>
+</div>
 <select id="tagFilter2" onchange="render()"></select>
 <select id="userFilter2" onchange="render()">
   <option value="">全ユーザー</option>
@@ -2646,61 +2681,87 @@ function resumeOnlineCommentAndReactionListenersIfNeeded(){
   if(!onlineCommentsUnsubscribe){
     const listenComments=useCommentAfter ? window.listenOnlineCommentsAfterFromFirebase : window.listenOnlineCommentsFromFirebase;
     if(listenComments){
-      onlineCommentsUnsubscribe=listenComments(
-        lesson.onlineLessonId,
-        useCommentAfter ? commentAfter : comments=>comments,
-        useCommentAfter ? comments=>{
+      if(useCommentAfter){
+        onlineCommentsUnsubscribe=listenComments(
+          lesson.onlineLessonId,
+          commentAfter,
+          comments=>{
+            const currentLesson=getCurrentLesson();
+            if(!currentLesson || currentLesson.onlineLessonId!==lesson.onlineLessonId)return;
+
+            mergeOnlineComments(comments);
+            render();
+            renderReactionTimeline();
+            setOnlineConnectionStatus("保存済み");
+            save();
+          },
+          error=>{
+            setOnlineConnectionStatus("通信失敗");
+            alert("オンラインコメントの同期に失敗しました：" + error.message);
+          }
+        );
+      }else{
+        onlineCommentsUnsubscribe=listenComments(
+          lesson.onlineLessonId,
+          comments=>{
           const currentLesson=getCurrentLesson();
           if(!currentLesson || currentLesson.onlineLessonId!==lesson.onlineLessonId)return;
 
-          mergeOnlineComments(comments);
-          render();
-          renderReactionTimeline();
-          save();
-        } : comments=>{
-          const currentLesson=getCurrentLesson();
-          if(!currentLesson || currentLesson.onlineLessonId!==lesson.onlineLessonId)return;
-
-          memos=comments;
-          sortMemosByTime();
-          render();
-          renderReactionTimeline();
-          save();
-        },
-        error=>{
-          setOnlineConnectionStatus("通信失敗");
-          alert("オンラインコメントの同期に失敗しました：" + error.message);
-        }
-      );
+            memos=comments;
+            sortMemosByTime();
+            render();
+            renderReactionTimeline();
+            setOnlineConnectionStatus("保存済み");
+            save();
+          },
+          error=>{
+            setOnlineConnectionStatus("通信失敗");
+            alert("オンラインコメントの同期に失敗しました：" + error.message);
+          }
+        );
+      }
     }
   }
 
   if(!onlineReactionsUnsubscribe){
     const listenReactions=useReactionAfter ? window.listenOnlineReactionsAfterFromFirebase : window.listenOnlineReactionsFromFirebase;
     if(listenReactions){
-      onlineReactionsUnsubscribe=listenReactions(
-        lesson.onlineLessonId,
-        useReactionAfter ? reactionAfter : reactions=>reactions,
-        useReactionAfter ? reactions=>{
+      if(useReactionAfter){
+        onlineReactionsUnsubscribe=listenReactions(
+          lesson.onlineLessonId,
+          reactionAfter,
+          reactions=>{
+            const currentLesson=getCurrentLesson();
+            if(!currentLesson || currentLesson.onlineLessonId!==lesson.onlineLessonId)return;
+
+            mergeOnlineReactions(reactions);
+            renderReactionTimeline();
+            setOnlineConnectionStatus("保存済み");
+            save();
+          },
+          error=>{
+            setOnlineConnectionStatus("通信失敗");
+            alert("オンラインリアクションの同期に失敗しました：" + error.message);
+          }
+        );
+      }else{
+        onlineReactionsUnsubscribe=listenReactions(
+          lesson.onlineLessonId,
+          reactions=>{
           const currentLesson=getCurrentLesson();
           if(!currentLesson || currentLesson.onlineLessonId!==lesson.onlineLessonId)return;
 
-          mergeOnlineReactions(reactions);
-          renderReactionTimeline();
-          save();
-        } : reactions=>{
-          const currentLesson=getCurrentLesson();
-          if(!currentLesson || currentLesson.onlineLessonId!==lesson.onlineLessonId)return;
-
-          quickReactions=reactions;
-          renderReactionTimeline();
-          save();
-        },
-        error=>{
-          setOnlineConnectionStatus("通信失敗");
-          alert("オンラインリアクションの同期に失敗しました：" + error.message);
-        }
-      );
+            quickReactions=reactions;
+            renderReactionTimeline();
+            setOnlineConnectionStatus("保存済み");
+            save();
+          },
+          error=>{
+            setOnlineConnectionStatus("通信失敗");
+            alert("オンラインリアクションの同期に失敗しました：" + error.message);
+          }
+        );
+      }
     }
   }
 
@@ -3853,20 +3914,30 @@ function renderCommentCard(m,i,options){
   return div;
 }
 
+function getSelectedPhaseFilters(phaseFilterId){
+  const filterArea=document.getElementById(phaseFilterId);
+  if(!filterArea)return [];
+  return Array.from(filterArea.querySelectorAll('input[type="checkbox"]:checked')).map(input=>input.value);
+}
+
+function matchesSelectedPhases(m, selectedPhases){
+  if(!selectedPhases || selectedPhases.length===0)return true;
+  const phase=m.phase || "区分なし";
+  return selectedPhases.includes(phase);
+}
+
 function renderCommentsToArea(areaId, phaseFilterId, tagFilterId, userFilterId, commentSearchId, readOnly){
   const area=document.getElementById(areaId);
   if(!area)return;
 
-  const phaseFilter=document.getElementById(phaseFilterId).value;
+  const selectedPhases=getSelectedPhaseFilters(phaseFilterId);
   const tagFilter=document.getElementById(tagFilterId).value;
   const userFilter=document.getElementById(userFilterId).value;
   const commentSearch=document.getElementById(commentSearchId).value.trim();
   const focusOwnOnly=inputFocusMode && areaId==="comments" && isInputFocusAvailable();
 
   memos.forEach((m,i)=>{
-    if(phaseFilter==="協議前" && m.phase!=="協議前") return;
-    if(phaseFilter==="協議後" && m.phase!=="協議後") return;
-    if(phaseFilter==="区分なし" && m.phase) return;
+    if(!matchesSelectedPhases(m, selectedPhases)) return;
     if(tagFilter && m.tag!==tagFilter) return;
     if(userFilter && m.user!==userFilter) return;
     if(commentSearch && !m.text.includes(commentSearch)) return;
@@ -4079,6 +4150,18 @@ function toggleDetailedOutputs(){
     area.style.display="block";
   }else{
     area.style.display="none";
+  }
+}
+
+function toggleInputOutputMenu(){
+  const area=document.getElementById("inputOutputMenuContent");
+  const btn=document.getElementById("toggleInputOutputMenuBtn");
+  if(!area)return;
+
+  const open=area.style.display==="none" || area.style.display==="";
+  area.style.display=open ? "block" : "none";
+  if(btn){
+    btn.textContent=open ? "入力・出力 ▲" : "入力・出力 ▼";
   }
 }
 
