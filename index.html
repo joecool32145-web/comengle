@@ -1,0 +1,6078 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>授業分析アプリ var6.2.10</title>
+
+<style>
+body { font-family: sans-serif; margin: 0; }
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.panel {
+  flex: 1;
+  border: 1px solid #ccc;
+  padding: 5px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+video { width: 100%; }
+#seekBar { width: 100%; }
+
+.comment {
+  background: white;
+  padding: 5px;
+  margin: 5px 0;
+  border-radius: 5px;
+  border-left: 4px solid transparent;
+}
+
+.highlight {
+  border: 2px solid orange;
+  border-left: 8px solid orange;
+}
+
+.reply {
+  margin-left: 20px;
+  background: #f5f5f5;
+  padding: 3px;
+}
+
+.color-red { background:#ffd6d6 !important; }
+.color-blue { background:#d6eaff !important; }
+.color-green { background:#d6ffd6 !important; }
+
+.miniIcon{
+  width:15px;
+  height:15px;
+  display:block;
+  pointer-events:none;
+}
+
+.iconButton{
+  width:24px;
+  height:24px;
+  padding:3px;
+  border:none;
+  background:transparent;
+  border-radius:6px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  opacity:0.72;
+  transition:opacity 0.15s ease, background 0.15s ease;
+  vertical-align:middle;
+}
+
+.iconButton:hover{
+  opacity:1;
+  background:rgba(0,0,0,0.05);
+}
+
+.colorPickerCompact{
+  position:relative;
+  width:28px;
+  height:24px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:6px;
+  opacity:0.72;
+  vertical-align:middle;
+}
+
+.colorPickerCompact:hover{
+  opacity:1;
+  background:rgba(0,0,0,0.05);
+}
+
+.colorPickerCompact select{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  opacity:0;
+  cursor:pointer;
+}
+
+.colorDot{
+  position:absolute;
+  right:2px;
+  bottom:2px;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  display:inline-block;
+  border:1px solid #999;
+  background:white;
+  pointer-events:none;
+}
+
+.colorDot.color-red{background:#ff7777 !important;}
+.colorDot.color-blue{background:#77aaff !important;}
+.colorDot.color-green{background:#77cc77 !important;}
+
+#planEditor {
+  width: 100%;
+  height: 400px;
+  border: 1px solid #aaa;
+  padding: 5px;
+}
+
+.lessonItem {
+  border: 1px solid #ccc;
+  padding: 8px;
+  margin: 6px 0;
+}
+
+.lessonMeta {
+  font-size: 0.9em;
+  color: #555;
+  margin: 4px 0;
+}
+
+.tagLabel {
+  font-size: 0.85em;
+  color: #555;
+}
+
+#userSummary,
+#phaseSummary,
+#userTagSummary,
+#userPhaseSummary {
+  font-size: 0.9em;
+  background: #f7f7f7;
+  border: 1px solid #ddd;
+  padding: 5px;
+  margin: 8px 0;
+}
+
+#userTagSummary,
+#userPhaseSummary {
+  overflow-x: auto;
+}
+
+#userTagSummary table,
+#userPhaseSummary table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#userTagSummary th,
+#userTagSummary td,
+#userPhaseSummary th,
+#userPhaseSummary td {
+  border: 1px solid #ccc;
+  padding: 3px;
+  text-align: center;
+}
+
+
+#onlineEntrance {
+  border: 1px solid #ddd;
+  background: #f8f8f8;
+  padding: 8px;
+  margin: 8px 0;
+}
+
+.onlineEntranceRow {
+  margin: 6px 0;
+}
+
+.onlineEntranceLabel {
+  font-size: 0.9em;
+  color: #444;
+  margin-bottom: 2px;
+}
+
+#onlineEntrance input {
+  margin: 3px 0;
+}
+
+#onlineEntranceInfo {
+  font-size: 0.85em;
+  color: #555;
+  margin-top: 5px;
+}
+
+#firebaseTestResult {
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+#onlineShareLinkArea {
+  font-size: 0.9em;
+  margin-top: 6px;
+}
+
+#onlineCheckPanel {
+  border: 1px solid #cfd8dc;
+  background: #f7fbff;
+  padding: 8px;
+  margin: 6px 0;
+  font-size: 0.9em;
+}
+
+#onlineCheckPanel ul {
+  margin: 6px 0 0 18px;
+  padding: 0;
+}
+
+#onlineCheckPanel li {
+  margin: 2px 0;
+}
+
+#onlineShareLinkInput {
+  width: 70%;
+  box-sizing: border-box;
+}
+
+#onlineArchivePanel {
+  display: none;
+  font-size: 0.9em;
+  background: #fff7e6;
+  border: 1px solid #f0c36d;
+  padding: 6px;
+  margin: 6px 0;
+}
+
+#onlineArchiveResult {
+  margin-top: 4px;
+  color: #555;
+}
+
+#onlineUserRole {
+  font-weight: bold;
+}
+
+#analysisDetails {
+  display: none;
+}
+
+#detailedOutputButtons {
+  display: none;
+}
+
+#inputOutputMenu {
+  display: inline-block;
+  position: relative;
+}
+
+#inputOutputMenuContent {
+  display: none;
+  margin-top: 6px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 8px;
+}
+
+#inputOutputMenuContent button,
+#inputOutputMenuContent .backupNotice,
+#inputOutputMenuContent #onlineArchivePanel {
+  margin: 3px;
+}
+
+#filterControls {
+  display: none;
+}
+
+#tagSettingsPanel {
+  font-size: 0.9em;
+  background: #f7f7f7;
+  border: 1px solid #ddd;
+  padding: 6px;
+  margin: 6px 0;
+}
+
+#tagSettingsArea {
+  display: none;
+  margin-top: 5px;
+}
+
+.tagSettingItem {
+  border: 1px solid #ddd;
+  background: white;
+  padding: 5px;
+  margin: 4px 0;
+}
+
+.tagSettingItem input {
+  margin: 2px 3px 2px 0;
+}
+
+/* ===== var4.7.6.1 共通設定を動画欄へ移動 =====
+   時刻表示と観点タグ設定を動画・授業全体の共通設定として扱うための最小CSS。
+*/
+#commonLessonSettings {
+  font-size: 0.9em;
+  background: #f7f7f7;
+  border: 1px solid #ddd;
+  padding: 6px;
+  margin: 6px 0;
+}
+
+#commonLessonSettingsLabel {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+#commonLessonSettingsArea {
+  display: none;
+  margin-top: 6px;
+}
+
+#commonLessonSettings #tagSettingsPanel {
+  margin: 6px 0 0;
+}
+
+#filterControls2 {
+  display: none;
+}
+
+#inputFocusModeBtn {
+  display: inline-block;
+}
+
+@media(min-width:769px){
+  .container.input-focus-mode #memoPanel {
+    order: 1;
+    flex: 1 1 42%;
+    max-height: 600px;
+  }
+
+  .container.input-focus-mode #commentPanel {
+    order: 2;
+    flex: 1 1 54%;
+  }
+}
+
+.inputFocusNotice {
+  font-size: 0.9em;
+  color: #555;
+  background: #eef8ff;
+  border: 1px solid #b8d8ea;
+  padding: 5px;
+  margin: 5px 0;
+}
+
+#videoTimeDisplay {
+  font-size: 0.9em;
+  color: #555;
+  margin-left: 6px;
+  white-space: nowrap;
+}
+
+#inputStartStatus {
+  font-size: 0.9em;
+  color: #555;
+  margin-top: 4px;
+}
+
+#commentInputArea {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: 430px;
+  max-width: calc(100vw - 32px);
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  z-index: 1000;
+}
+
+#commentInputArea input,
+#commentInputArea select {
+  margin: 2px 0;
+}
+
+#newComment {
+  width: 68%;
+  box-sizing: border-box;
+}
+
+#commentPanel {
+  padding-bottom: 190px;
+}
+
+.backupNotice {
+  font-size: 0.9em;
+  color: #555;
+  background: #fff8dc;
+  border: 1px solid #e0d28a;
+  padding: 6px;
+  margin: 6px 0;
+}
+
+#memoPanel {
+  flex-basis: 100%;
+  max-height: none;
+}
+
+.memoItem {
+  border: 1px solid #ccc;
+  padding: 8px;
+  margin: 8px 0;
+  background: #fafafa;
+}
+
+.memoTitle {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 5px;
+}
+
+.memoContent {
+  width: 100%;
+  height: 120px;
+  box-sizing: border-box;
+}
+
+.memoButtons {
+  margin-top: 5px;
+}
+
+.panelMoveButton {
+  margin-bottom: 5px;
+}
+
+.panel{
+  position:relative;
+  padding-top:30px;
+}
+
+.panelMoveControls{
+  position:absolute;
+  top:6px;
+  right:6px;
+  display:flex;
+  gap:3px;
+  z-index:2;
+}
+
+.panelMoveControls .iconButton{
+  width:22px;
+  height:22px;
+  padding:3px;
+}
+
+.panelMoveButton{
+  margin-bottom:0;
+}
+
+.commentPanelHeader{
+  border-bottom:1px solid #ddd;
+  padding-bottom:6px;
+  margin-bottom:8px;
+}
+
+.commentPanelHeaderRow{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+  margin:3px 0;
+}
+
+.commentPanelHeaderTitle{
+  font-weight:bold;
+  margin-right:auto;
+}
+
+.commentPanelHeader button{
+  font-size:0.9em;
+  padding:3px 7px;
+}
+
+.reactionButtons {
+  display: inline-block;
+  margin-left: 5px;
+}
+
+.reactionButton {
+  font-size: 1.1em;
+  margin: 0 1px;
+}
+
+.reactionButton.selected {
+  border: 2px solid orange;
+  background: #fff3d6;
+}
+
+.reactionDisplay {
+  font-size: 1.2em;
+  margin-left: 5px;
+}
+
+.reactionMenu{
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  position:relative;
+  vertical-align:middle;
+}
+
+.reactionPicker{
+  display:inline-flex;
+  gap:2px;
+  padding:3px;
+  border:1px solid #ddd;
+  border-radius:8px;
+  background:#fff;
+}
+
+.reactionPicker[hidden]{
+  display:none;
+}
+
+.inputTopRow,
+.inputBottomRow{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:4px;
+  flex-wrap:wrap;
+}
+
+.inputReactionPicker{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.inputReactionGroup{
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+}
+
+.inputReactionLabel{
+  font-size:0.85em;
+  color:#555;
+}
+
+/* var4.7.6.9.1 コメント入力欄textarea調整 */
+#newComment{
+  width:22em;
+  min-height:38px;
+  max-height:180px;
+  resize:none;
+  overflow-y:hidden;
+  line-height:1.4;
+  padding:8px 10px;
+  box-sizing:border-box;
+  white-space:pre-wrap;
+}
+
+.inputTopRow,
+.inputBottomRow{
+  align-items:flex-start;
+}
+
+.inputBottomRow{
+  margin-top:6px;
+}
+
+.videoControlsRow{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:6px;
+}
+
+.videoControlsRow button{
+  min-width:56px;
+}
+
+.videoMetaRow{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:6px 0;
+}
+
+.videoMetaRow label{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+}
+
+.videoMetaRow input[type="range"]{
+  width:120px;
+}
+
+.reactionTimelinePanel{
+  margin-top:8px;
+}
+
+.reactionTimelinePanel > button{
+  margin-bottom:6px;
+}
+
+/* var4.7.6.9.6 パネル高さ統一
+   既存構造は変えず、PC幅のみ主要パネルの高さ感をそろえる。 */
+@media(min-width:769px){
+  #videoPanel,
+  #commentPanel,
+  #commentPanel2,
+  #planPanel,
+  #topMemoPanel,
+  #topMemoPanel2,
+  #memoPanel{
+    height:680px;
+    min-height:680px;
+    max-height:680px;
+    overflow-y:auto;
+    box-sizing:border-box;
+  }
+
+  #videoPanel video{
+    max-height:360px;
+    object-fit:contain;
+    background:#000;
+  }
+
+  #commentPanel{
+    padding-bottom:80px;
+  }
+
+  #reactionTimeline{
+    height:52px;
+  }
+
+  #planEditor{
+    height:500px;
+  }
+
+  #topMemoContent,
+  #topMemoContent2{
+    height:520px;
+  }
+}
+
+#reactionTimelineLabel {
+  font-size: 0.85em;
+  color: #555;
+  margin-top: 5px;
+}
+
+#videoLinkDisplay {
+  font-size: 0.85em;
+  margin: 4px 0;
+  word-break: break-all;
+}
+
+#reactionTimeline {
+  position: relative;
+  height: 56px;
+  border: 1px solid #ccc;
+  background: #f7f7f7;
+  margin: 3px 0 8px 0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+#reactionTimeline::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 27px;
+  border-top: 1px solid #ddd;
+}
+
+.reactionTimelineMarker {
+  position: absolute;
+  font-size: 0.8em;
+  transform: translateX(-50%);
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  line-height: 1.2;
+  z-index: 1;
+}
+
+.reactionTimelineSettings{
+  font-size:0.85em;
+  margin:4px 0;
+}
+
+#reactionTimelineSettingsArea{
+  display:none;
+  margin-top:4px;
+}
+
+.reactionTimelineLaneLabel{
+  position:absolute;
+  left:4px;
+  font-size:0.75em;
+  color:#555;
+  background:rgba(247,247,247,0.9);
+  padding-right:4px;
+  z-index:1;
+  pointer-events:none;
+}
+
+#liveRecordedRecordModeArea{
+  display:none;
+  font-size:0.9em;
+  margin:4px 0;
+  padding:4px 6px;
+  background:#f7f7f7;
+  border:1px solid #ddd;
+  border-radius:4px;
+}
+
+#liveRecordedRecordModeArea label{
+  margin-right:8px;
+  white-space:nowrap;
+}
+
+.reactionTimelineEmpty {
+  color: #777;
+  font-size: 0.85em;
+  padding: 18px 6px;
+}
+
+#topMemoTitle,
+#topMemoTitle2 {
+  font-size: 0.9em;
+  color: #555;
+  margin: 5px 0;
+}
+
+#topMemoContent,
+#topMemoContent2 {
+  width: 100%;
+  height: 300px;
+  box-sizing: border-box;
+}
+
+@media(max-width:768px){
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    font-size: 16px;
+  }
+
+  body {
+    line-height: 1.5;
+  }
+
+  #menuScreen,
+  #appScreen {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 8px;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    font-size: 16px;
+  }
+
+  .controls button,
+  .controls label {
+    min-height: 40px;
+  }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 10px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding-bottom: 224px;
+  }
+
+  .panel {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex: 0 0 auto;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: visible;
+    box-sizing: border-box;
+    padding: 12px 8px 10px;
+  }
+
+  #videoPanel { order: 1; }
+  #commentPanel { order: 2; padding-bottom: 224px; }
+  #commentPanel2 { order: 4; }
+  #planPanel { order: 5; }
+  #topMemoPanel { order: 6; }
+  #topMemoPanel2 { order: 7; }
+  #memoPanel { order: 8; }
+
+  .container.input-focus-mode #commentPanel {
+    order: 1;
+    padding-bottom: 224px;
+  }
+
+  .container.input-focus-mode #memoPanel {
+    order: 2;
+    display: block;
+  }
+
+  #commentInputArea {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+    box-sizing: border-box;
+    border-radius: 16px 16px 0 0;
+    z-index: 50;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.16);
+    max-height: 46dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  button,
+  select,
+  input,
+  textarea,
+  #commentInputArea input,
+  #commentInputArea select,
+  #commentInputArea textarea {
+    font-size: 16px;
+  }
+
+  button,
+  select,
+  input {
+    min-height: 44px;
+  }
+
+  button {
+    padding: 9px 12px;
+    border-radius: 10px;
+    touch-action: manipulation;
+  }
+
+  select,
+  input,
+  textarea {
+    padding: 8px 10px;
+    border-radius: 10px;
+    box-sizing: border-box;
+  }
+
+  .controls {
+    gap: 8px;
+  }
+
+  .controls button,
+  .controls select,
+  .controls input,
+  .controls label {
+    min-height: 44px;
+  }
+
+  .commentPanelHeader {
+    gap: 8px;
+  }
+
+  .commentPanelHeaderRow {
+    gap: 8px;
+  }
+
+  .commentPanelHeader button,
+  .commentPanelHeader select,
+  .commentPanelHeader input {
+    min-height: 42px;
+    padding: 8px 10px;
+  }
+
+  .videoControlsRow {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .videoMetaRow {
+    gap: 8px;
+  }
+
+  .videoMetaRow input[type="range"] {
+    width: 120px;
+    max-width: 100%;
+  }
+
+  .videoControlsRow button,
+  .videoControlsRow select,
+  .videoControlsRow input {
+    min-height: 44px;
+    padding: 8px 12px;
+  }
+
+  #commentInputArea button,
+  #commentInputArea select,
+  #commentInputArea input {
+    min-height: 46px;
+    border-radius: 10px;
+    touch-action: manipulation;
+  }
+
+  #commentInputArea input,
+  #commentInputArea select {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .inputTopRow,
+  .inputBottomRow {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .inputBottomRow {
+    align-items: flex-start;
+  }
+
+  .inputTopRow {
+    margin-bottom: 8px;
+  }
+
+  #commentStartBtn {
+    min-height: 46px;
+    padding: 8px 12px;
+    white-space: nowrap;
+  }
+
+  #newComment {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    max-height: 34dvh;
+    flex: 1 1 180px;
+    font-size: 16px;
+    line-height: 1.5;
+    padding: 10px 12px;
+    border-radius: 14px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #inputStartStatus {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    font-size: 15px;
+  }
+
+  .inputReactionPicker {
+    max-width: 100%;
+  }
+
+  .inputReactionPicker button {
+    min-width: 46px;
+    min-height: 46px;
+    padding: 7px 9px;
+  }
+
+  .iconButton {
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+  }
+
+  .miniIcon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .reactionMenu {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .reactionPicker,
+  .reactionButtons {
+    gap: 6px;
+  }
+
+  .reactionButton {
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 20px;
+    padding: 6px 8px;
+  }
+
+  #comments,
+  #comments2,
+  #notesArea {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .comment {
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .commentPanelHeaderRow {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .reactionPicker {
+    flex-wrap: wrap;
+    max-width: calc(100vw - 28px);
+  }
+
+  video {
+    max-height: 45vh;
+    object-fit: contain;
+    background: #000;
+  }
+
+  .panelMoveControls .iconButton {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+.phaseFilterArea {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.phaseFilterAreaLabel {
+  font-size: 12px;
+  color: #555;
+  margin-right: 2px;
+}
+
+.phaseFilterArea label {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+/* var6.2.1 絞り込み折りたたみUI */
+.filterSection {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  margin: 5px 0;
+}
+
+.filterSectionToggle {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: #f7f7f7;
+  padding: 7px 9px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.filterSectionBody {
+  display: none;
+  padding: 7px 9px;
+  border-top: 1px solid #e6e6e6;
+}
+
+.filterSectionBody select,
+.filterSectionBody input {
+  max-width: 100%;
+}
+
+.filterSearchRow {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.filterSearchRow span {
+  white-space: nowrap;
+  font-size: 12px;
+  color: #555;
+}
+
+.filterSearchRow input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* var6.2.2 観点タグ複数選択 */
+.tagFilterArea {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.tagFilterArea label {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+/* var6.2.3 ユーザー名複数選択・タグ別表示 */
+.userFilterArea {
+  display: block;
+}
+
+.userFilterGroup {
+  border-top: 1px solid #eee;
+  padding: 6px 0;
+}
+
+.userFilterGroup:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.userFilterGroupTitle {
+  font-size: 12px;
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.userFilterGroup label {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin: 2px 8px 2px 0;
+  white-space: nowrap;
+}
+
+/* var6.2.4 絞り込み条件リセット・件数表示 */
+.filterSummaryBox {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fafafa;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.filterSummaryBox div {
+  margin: 2px 0;
+}
+
+.filterSummaryBox button {
+  margin-top: 4px;
+}
+
+.menuAccordion {
+  border: 1px solid #d6dde8;
+  border-radius: 10px;
+  margin: 10px 0;
+  background: #fff;
+  overflow: hidden;
+}
+
+.menuAccordionHeader {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #e7ecf3;
+  background: #f6f8fb;
+  padding: 12px 14px;
+  text-align: left;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.menuAccordionContent {
+  padding: 12px 14px;
+}
+
+.menuActionGrid {
+  display: grid;
+  grid-template-columns: minmax(120px, 180px) minmax(220px, 1fr);
+  gap: 8px 12px;
+  align-items: center;
+  max-width: 720px;
+}
+
+.menuActionGrid input,
+.menuActionGrid select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.menuFullRow {
+  grid-column: 1 / -1;
+}
+
+.menuPrimaryButton {
+  font-weight: 700;
+  padding: 8px 12px;
+}
+
+.menuError {
+  color: #d93025;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.menuStatus {
+  margin-top: 8px;
+}
+
+@media(max-width:768px){
+  .menuActionGrid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="menuScreen">
+<h3>授業分析アプリ（var6.2.10）</h3>
+
+<div id="onlineEntrance">
+<div class="menuAccordion">
+<button class="menuAccordionHeader" onclick="toggleMenuAccordion('participantAccordionContent', this)">参加者用 ▲</button>
+<div id="participantAccordionContent" class="menuAccordionContent">
+  <div class="menuActionGrid">
+    <div class="onlineEntranceLabel">参加者名</div>
+    <input id="participantName" placeholder="参加者名">
+    <div class="onlineEntranceLabel">授業コード</div>
+    <input id="joinLessonCode" placeholder="授業コード">
+    <div class="menuFullRow">
+      <button class="menuPrimaryButton" onclick="joinOnlineLessonPlaceholder()">授業に入る</button>
+      <div id="joinOnlineError" class="menuError"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="menuAccordion">
+<button class="menuAccordionHeader" onclick="toggleMenuAccordion('creatorAccordionContent', this)">作成者用 ▼</button>
+<div id="creatorAccordionContent" class="menuAccordionContent" style="display:none;">
+  <div class="menuActionGrid">
+    <div class="onlineEntranceLabel">授業名</div>
+    <input id="lessonName" placeholder="授業名">
+    <div class="onlineEntranceLabel">授業モード</div>
+    <select id="lessonType">
+      <option value="video">動画振り返りモード</option>
+      <option value="liveRecorded">生授業観察モード（録画あり）</option>
+      <option value="liveOnly">生授業観察モード（録画なし）</option>
+    </select>
+    <div class="menuFullRow">
+      <button class="menuPrimaryButton" onclick="createOnlineLessonPlaceholder()">オンライン授業を作成</button>
+      <button onclick="createLesson()">ローカル授業を作成</button>
+      <button onclick="testFirebaseConnection()">Firebase接続テスト</button>
+    </div>
+    <div class="menuFullRow">
+      <div id="firebaseTestResult"></div>
+      <div id="onlineCreateResult" class="menuStatus"></div>
+      <div id="onlineShareLinkArea">
+        <button onclick="copyJoinLessonCode()">授業コードをコピー</button>
+        共有リンク：<input id="onlineShareLinkInput" readonly>
+        <button onclick="copyOnlineShareLink()">共有リンクをコピー</button>
+      </div>
+    </div>
+  </div>
+  <div id="onlineEntranceInfo">
+    参加者名を入力してオンライン授業を作成すると、授業コードと共有リンクを参加者に配布できます。
+  </div>
+</div>
+</div>
+</div>
+
+<div class="menuAccordion">
+<button class="menuAccordionHeader" onclick="toggleMenuAccordion('savedLessonsAccordionContent', this)">保存済み授業 ▼</button>
+<div id="savedLessonsAccordionContent" class="menuAccordionContent" style="display:none;">
+<h4>授業一覧</h4>
+
+<input id="lessonSearch" placeholder="授業名で検索" oninput="renderLessons()">
+<label><input type="checkbox" id="favoriteOnly" onchange="renderLessons()">お気に入りのみ</label>
+<select id="lessonSort" onchange="renderLessons()">
+  <option value="created">作成順</option>
+  <option value="updatedDesc">新しい更新順</option>
+  <option value="updatedAsc">古い更新順</option>
+  <option value="favorite">お気に入り優先</option>
+</select>
+<div class="backupNotice">保存データはこのブラウザ・この開き方に依存します。定期的に「全授業JSON出力」でバックアップしてください。</div>
+<button onclick="exportAllLessonsCSV()">全授業CSV出力</button>
+<button onclick="exportAllLessonsJSON()">全授業JSON出力</button>
+<input type="file" id="allLessonsJsonInput" accept=".json,application/json" onchange="importAllLessonsJSON(event)">
+<button onclick="document.getElementById('onlineArchiveJsonInput').click()">オンライン退避JSON読込</button>
+<input type="file" id="onlineArchiveJsonInput" accept=".json,application/json" style="display:none" onchange="importOnlineLessonArchiveJSON(event)">
+
+<div id="lessonList"></div>
+</div>
+</div>
+</div>
+
+<div id="appScreen" style="display:none;">
+
+<h3 id="currentLessonTitle">授業分析アプリ（var6.2.10）</h3>
+
+<div class="controls">
+<button onclick="backToMenu()">メニューへ戻る</button>
+<label><input type="checkbox" id="videoToggle" checked onchange="togglePanel('videoPanel')">動画</label>
+<label><input type="checkbox" id="commentToggle" checked onchange="togglePanel('commentPanel')">コメント</label>
+<label><input type="checkbox" id="commentToggle2" onchange="togglePanel('commentPanel2')">コメント②</label>
+<label><input type="checkbox" id="planToggle" onchange="togglePanel('planPanel')">指導案</label>
+<label><input type="checkbox" id="topMemoToggle" onchange="togglePanel('topMemoPanel')">メモ1</label>
+<label><input type="checkbox" id="topMemoToggle2" onchange="togglePanel('topMemoPanel2')">メモ2</label>
+<label><input type="checkbox" id="memoToggle" onchange="togglePanel('memoPanel')">メモ</label>
+<button onclick="toggleInputFocusMode()" id="inputFocusModeBtn">入力集中: OFF</button>
+<div id="inputOutputMenu">
+<button onclick="toggleInputOutputMenu()" id="toggleInputOutputMenuBtn">入力・出力 ▼</button>
+<div id="inputOutputMenuContent">
+  <button onclick="exportCSV()">CSV出力</button>
+  <button onclick="toggleDetailedOutputs()">詳細出力</button>
+  <button onclick="exportCurrentLessonJSON()">JSON出力</button>
+  <input type="file" id="jsonInput" accept=".json,application/json" onchange="importCurrentLessonJSON(event)">
+  <div class="backupNotice">このJSON出力は現在開いている授業のコメント・メモ保存用です。全授業をまとめて残す場合はメニュー画面の「全授業JSON出力」を使ってください。</div>
+  <div id="detailedOutputButtons">
+  <button onclick="exportUserSummaryCSV()">ユーザー別CSV出力</button>
+  <button onclick="exportTagSummaryCSV()">タグ別CSV出力</button>
+  <button onclick="exportNotesCSV()">メモCSV出力</button>
+  <button onclick="exportAnalysisSummaryCSV()">分析サマリーCSV出力</button>
+  </div>
+  <div id="onlineArchivePanel">
+    <button onclick="exportOnlineLessonArchiveJSON()">オンライン授業JSON退避</button>
+    <button onclick="deleteOnlineLessonAfterArchive()">Firebase上のオンライン授業を削除</button>
+    <div id="onlineArchiveResult"></div>
+  </div>
+</div>
+</div>
+<div id="onlineStatusPanel">
+  <div>接続状態：<span id="onlineConnectionStatus">未接続</span></div>
+  <div>自分の役割：<span id="onlineUserRole">未接続</span></div>
+  <div>参加者：<span id="onlineParticipantsList">なし</span></div>
+</div>
+</div>
+
+<div class="container">
+
+<div id="videoPanel" class="panel">
+<div class="panelMoveControls">
+<button class="panelMoveButton iconButton" onclick="movePanelUp('videoPanel')" title="上へ移動" aria-label="上へ移動"><svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true"><path d="M12 5l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 5l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 6v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+<button class="panelMoveButton iconButton" onclick="movePanelDown('videoPanel')" title="下へ移動" aria-label="下へ移動"><svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true"><path d="M12 19l-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19l6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 18V5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+</div>
+<input type="file" id="videoInput"><br><br>
+動画視聴開始時刻 <input type="time" id="videoStartTime" step="1" oninput="updateVideoStartTime(this.value)"><br>
+<input type="hidden" id="videoLinkInput" value="">
+
+<video id="video"></video>
+<input type="range" id="seekBar">
+<div class="videoMetaRow">
+  <span id="videoTimeDisplay">00:00 / 00:00</span>
+  <label>倍速
+    <select id="playbackRateSelect" onchange="changePlaybackRate(this.value)">
+      <option value="0.5">0.5倍</option>
+      <option value="0.75">0.75倍</option>
+      <option value="1" selected>1倍</option>
+      <option value="1.25">1.25倍</option>
+      <option value="1.5">1.5倍</option>
+      <option value="2">2倍</option>
+    </select>
+  </label>
+  <label>音量 <input type="range" id="volume" min="0" max="1" step="0.1"></label>
+</div>
+
+<div class="videoControlsRow">
+  <button onclick="skipBack10()">↶ 10秒</button>
+  <button onclick="togglePlayPause()" id="playPauseBtn">▶</button>
+  <button onclick="skipForward10()">10秒 ↷</button>
+</div>
+
+<div id="commonLessonSettings">
+  <button onclick="toggleCommonSettings()" id="commonLessonSettingsLabel">共通設定 ▼</button>
+  <div id="commonLessonSettingsArea">
+    <button onclick="toggleTimeDisplayMode()" id="timeDisplayModeBtn">時刻表示: 実時間</button>
+    <button onclick="toggleComparisonViewMode()" id="comparisonViewModeBtn">比較表示モード: OFF</button>
+    <label>コメント追従範囲：
+      <select id="syncRangeSelect" onchange="changeSyncRange(this.value)">
+        <option value="0">なし</option>
+        <option value="3">3秒</option>
+        <option value="10">10秒</option>
+        <option value="30" selected>30秒</option>
+        <option value="60">60秒</option>
+      </select>
+    </label>
+    <div id="tagSettingsPanel">
+      <button onclick="toggleTagSettings()" id="tagSettingsToggleBtn">観点タグ設定: 非表示</button>
+      <div id="tagSettingsArea">
+        <div>タグは授業ごとの共通観点です。オンライン授業では参加者全員に共有されます。</div>
+        <div id="tagSettingsList"></div>
+        <button onclick="addTagSetting()">＋タグ追加</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="reactionTimelinePanel">
+  <button onclick="toggleReactionTimelineSettings()" id="reactionTimelineSettingsBtn">リアクションバー ▼</button>
+  <div id="reactionTimelineSettingsArea">
+    <div class="reactionTimelineSettings">
+    <div>分類表示</div>
+    <label><input type="checkbox" id="reactionTimelineGroupByTag" onchange="changeReactionTimelineGrouping()">タグごと</label>
+    <label><input type="checkbox" id="reactionTimelineGroupByComment" onchange="changeReactionTimelineGrouping()">コメントの有無</label>
+    </div>
+    <div id="reactionTimelineLabel">リアクションバー（コメント付き・コメントなしの絵文字のみ表示）</div>
+    <div id="reactionTimeline"></div>
+  </div>
+</div>
+</div>
+
+<div id="planPanel" class="panel">
+<div class="panelMoveControls">
+<button class="panelMoveButton iconButton" onclick="movePanelUp('planPanel')" title="上へ移動" aria-label="上へ移動"><svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true"><path d="M12 5l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 5l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 6v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+<button class="panelMoveButton iconButton" onclick="movePanelDown('planPanel')" title="下へ移動" aria-label="下へ移動"><svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true"><path d="M12 19l-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19l6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 18V5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+</div>
+<h4>指導案</h4>
+<div id="planEditor" contenteditable="true"></div>
+</div>
+
+<div id="topMemoPanel" class="panel">
+<div class="panelMoveControls">
+<button class="panelMoveButton iconButton" onclick="movePanelUp('topMemoPanel')" title="上へ移動" aria-label="上へ移動"><svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true"><path d="M12 5l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 5l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 6v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+<button class="panelMoveButton iconButton" onclick="movePanelDown('topMemoPanel')" title="下へ移動" aria-label="下へ移動"><svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true"><path d="M12 19l-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19l6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 18V5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+</div>
+<h4>メモ1</h4>
+<select id="topNoteSelect" onchange="changeTopNote(this.value)"></select>
+<div id="topMemoTitle"></div>
+<textarea id="topMemoContent" oninput="updateTopNoteContent(this.value)"></textarea>
+</div>
+
+<div id="topMemoPanel2" class="panel">
+<div class="panelMoveControls">
+<button class="panelMoveButton iconButton" onclick="movePanelUp('topMemoPanel2')" title="上へ移動" aria-label="上へ移動"><svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true"><path d="M12 5l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 5l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 6v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+<button class="panelMoveButton iconButton" onclick="movePanelDown('topMemoPanel2')" title="下へ移動" aria-label="下へ移動"><svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true"><path d="M12 19l-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19l6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 18V5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+</div>
+<h4>メモ2</h4>
+<select id="topNoteSelect2" onchange="changeTopNote2(this.value)"></select>
+<div id="topMemoTitle2"></div>
+<textarea id="topMemoContent2" oninput="updateTopNoteContent2(this.value)"></textarea>
+</div>
+
+<div id="commentPanel" class="panel">
+<div class="panelMoveControls">
+<button class="panelMoveButton iconButton" onclick="movePanelUp('commentPanel')" title="上へ移動" aria-label="上へ移動"><svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true"><path d="M12 5l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 5l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 6v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+<button class="panelMoveButton iconButton" onclick="movePanelDown('commentPanel')" title="下へ移動" aria-label="下へ移動"><svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true"><path d="M12 19l-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19l6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 18V5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+</div>
+<div class="commentPanelHeader">
+<div class="commentPanelHeaderRow">
+<span class="commentPanelHeaderTitle">コメント①</span>
+<button onclick="toggleAnalysisDetails()" id="analysisToggleBtn">詳細分析</button>
+</div>
+<div class="commentPanelHeaderRow">
+<button onclick="toggleFilterControls()" id="filterToggleBtn">絞り込み</button>
+<button onclick="toggleAutoScroll()" id="autoScrollBtn">スクロール: ON</button>
+<button onclick="toggleInputFocusMode()" id="inputFocusExitBtn" style="display:none;">入力集中OFF</button>
+</div>
+</div>
+<div id="inputFocusNotice" class="inputFocusNotice" style="display:none;">入力集中モード中：他者コメント・リアクションの受信を一時停止し、自分のコメントのみ表示します。OFFに戻すと停止中に追加された分を中心に再取得します。あなたのコメントは通常通り共有され、右側に個人メモを表示します。</div><br>
+
+<div id="commentInputArea">
+<input id="username" placeholder="ユーザー名">
+<select id="commentPhase">
+  <option value="">協議区分なし</option>
+  <option value="協議前">協議前</option>
+  <option value="協議後">協議後</option>
+  <option value="視聴後">視聴後</option>
+</select>
+<select id="commentTag"></select>
+<div id="liveRecordedRecordModeArea">
+記録方式：
+<label><input type="radio" name="liveRecordedRecordMode" value="real" checked onchange="changeLiveRecordedRecordMode(this.value)">実時間</label>
+<label><input type="radio" name="liveRecordedRecordMode" value="video" onchange="changeLiveRecordedRecordMode(this.value)">動画時間</label>
+</div>
+<div class="inputTopRow">
+  <button onclick="startCommentInput()" id="commentStartBtn">入力開始</button>
+  <span class="reactionMenu">
+    <button class="iconButton" onclick="toggleInputReactionMenu()" title="リアクション操作" aria-label="リアクション操作">
+      <svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true">
+        <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
+        <circle cx="9" cy="10" r="1" fill="currentColor"/>
+        <circle cx="15" cy="10" r="1" fill="currentColor"/>
+        <path d="M8.5 14c1 1.5 2.2 2.2 3.5 2.2s2.5-.7 3.5-2.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <span id="inputReactionPicker" class="reactionPicker inputReactionPicker" hidden>
+      <span class="inputReactionGroup">
+        <span class="inputReactionLabel">コメント</span>
+        <button id="inputReactionStar" class="reactionButton" onclick="selectCommentReaction('⭐')">⭐</button>
+        <button id="inputReactionHeart" class="reactionButton" onclick="selectCommentReaction('💗')">💗</button>
+        <button id="inputReactionClover" class="reactionButton" onclick="selectCommentReaction('🍀')">🍀</button>
+        <button id="inputReactionSparkle" class="reactionButton" onclick="selectCommentReaction('✨')">✨</button>
+        <button id="inputReactionThumb" class="reactionButton" onclick="selectCommentReaction('👍')">👍</button>
+        <button id="inputReactionMuscle" class="reactionButton" onclick="selectCommentReaction('💪')">💪</button>
+      </span>
+      <span class="inputReactionGroup">
+        <span class="inputReactionLabel">リアクションのみ</span>
+        <button class="reactionButton" onclick="addQuickReaction('⭐')">⭐</button>
+        <button class="reactionButton" onclick="addQuickReaction('💗')">💗</button>
+        <button class="reactionButton" onclick="addQuickReaction('🍀')">🍀</button>
+        <button class="reactionButton" onclick="addQuickReaction('✨')">✨</button>
+        <button class="reactionButton" onclick="addQuickReaction('👍')">👍</button>
+        <button class="reactionButton" onclick="addQuickReaction('💪')">💪</button>
+      </span>
+    </span>
+  </span>
+</div>
+<div class="inputBottomRow">
+  <textarea id="newComment" rows="1" placeholder="コメント"></textarea>
+</div>
+<div id="inputStartStatus"></div>
+</div>
+
+<div id="filterControls">
+<div class="filterSummaryBox">
+  <div id="filterCountSummary">表示：0 / 0件</div>
+  <div id="filterConditionSummary">選択中：なし</div>
+  <button onclick="clearFilters()">絞り込み解除</button>
+</div>
+<div class="filterSection">
+  <button class="filterSectionToggle" type="button" data-filter-section="phaseFilter" data-label="協議区分" onclick="toggleFilterSection('phaseFilter')">協議区分 ▶</button>
+  <div id="phaseFilter" class="phaseFilterArea filterSectionBody">
+    <span class="phaseFilterAreaLabel">協議区分</span>
+    <label><input type="checkbox" value="協議前" onchange="render()">協議前</label>
+    <label><input type="checkbox" value="協議後" onchange="render()">協議後</label>
+    <label><input type="checkbox" value="視聴後" onchange="render()">視聴後</label>
+    <label><input type="checkbox" value="区分なし" onchange="render()">区分なし</label>
+  </div>
+</div>
+<div class="filterSection">
+  <button class="filterSectionToggle" type="button" data-filter-section="tagFilterSection" data-label="観点タグ" onclick="toggleFilterSection('tagFilterSection')">観点タグ ▶</button>
+  <div id="tagFilterSection" class="filterSectionBody">
+    <div id="tagFilter" class="tagFilterArea"></div>
+  </div>
+</div>
+<div class="filterSection">
+  <button class="filterSectionToggle" type="button" data-filter-section="userFilterSection" data-label="ユーザー名" onclick="toggleFilterSection('userFilterSection')">ユーザー名 ▶</button>
+  <div id="userFilterSection" class="filterSectionBody">
+    <div id="userFilter" class="userFilterArea"></div>
+  </div>
+</div>
+<div class="filterSearchRow"><span>検索</span><input id="commentSearch" placeholder="コメント検索" oninput="render()"></div>
+</div>
+
+<div id="analysisDetails">
+<div id="phaseSummary"></div>
+<div id="userSummary"></div>
+<div id="userTagSummary"></div>
+<div id="userPhaseSummary"></div>
+</div>
+
+<div id="comments"></div>
+</div>
+
+<div id="commentPanel2" class="panel">
+<div class="panelMoveControls">
+<button class="panelMoveButton iconButton" onclick="movePanelUp('commentPanel2')" title="上へ移動" aria-label="上へ移動"><svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true"><path d="M12 5l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 5l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 6v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+<button class="panelMoveButton iconButton" onclick="movePanelDown('commentPanel2')" title="下へ移動" aria-label="下へ移動"><svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true"><path d="M12 19l-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19l6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 18V5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+</div>
+<div class="commentPanelHeader">
+<div class="commentPanelHeaderRow">
+<span class="commentPanelHeaderTitle">コメント②</span>
+<button onclick="toggleAnalysisDetails()">詳細分析</button>
+</div>
+<div class="commentPanelHeaderRow">
+<button onclick="toggleFilterControls2()" id="filterToggleBtn2">絞り込み</button>
+<button onclick="toggleAutoScroll2()" id="autoScrollBtn2">スクロール: ON</button>
+</div>
+</div>
+<div id="filterControls2">
+<div class="filterSummaryBox">
+  <div id="filterCountSummary2">表示：0 / 0件</div>
+  <div id="filterConditionSummary2">選択中：なし</div>
+  <button onclick="clearFilters2()">絞り込み解除</button>
+</div>
+<div class="filterSection">
+  <button class="filterSectionToggle" type="button" data-filter-section="phaseFilter2" data-label="協議区分" onclick="toggleFilterSection('phaseFilter2')">協議区分 ▶</button>
+  <div id="phaseFilter2" class="phaseFilterArea filterSectionBody">
+    <span class="phaseFilterAreaLabel">協議区分</span>
+    <label><input type="checkbox" value="協議前" onchange="render()">協議前</label>
+    <label><input type="checkbox" value="協議後" onchange="render()">協議後</label>
+    <label><input type="checkbox" value="視聴後" onchange="render()">視聴後</label>
+    <label><input type="checkbox" value="区分なし" onchange="render()">区分なし</label>
+  </div>
+</div>
+<div class="filterSection">
+  <button class="filterSectionToggle" type="button" data-filter-section="tagFilterSection2" data-label="観点タグ" onclick="toggleFilterSection('tagFilterSection2')">観点タグ ▶</button>
+  <div id="tagFilterSection2" class="filterSectionBody">
+    <div id="tagFilter2" class="tagFilterArea"></div>
+  </div>
+</div>
+<div class="filterSection">
+  <button class="filterSectionToggle" type="button" data-filter-section="userFilterSection2" data-label="ユーザー名" onclick="toggleFilterSection('userFilterSection2')">ユーザー名 ▶</button>
+  <div id="userFilterSection2" class="filterSectionBody">
+    <div id="userFilter2" class="userFilterArea"></div>
+  </div>
+</div>
+<div class="filterSearchRow"><span>検索</span><input id="commentSearch2" placeholder="コメント検索" oninput="render()"></div>
+</div>
+<br>
+<div id="comments2"></div>
+</div>
+
+<div id="memoPanel" class="panel">
+<div class="panelMoveControls">
+<button class="panelMoveButton iconButton" onclick="movePanelUp('memoPanel')" title="上へ移動" aria-label="上へ移動"><svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true"><path d="M12 5l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 5l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 6v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+<button class="panelMoveButton iconButton" onclick="movePanelDown('memoPanel')" title="下へ移動" aria-label="下へ移動"><svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true"><path d="M12 19l-6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19l6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 18V5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+</div>
+<h4>メモ</h4>
+<button onclick="addNote()">＋メモ追加</button>
+<div id="notesArea"></div>
+</div>
+
+</div>
+</div>
+
+<script>
+let lessons=[];
+let currentLessonId=null;
+let memos=[];
+let quickReactions=[];
+let tagSettings=[];
+let notes=[];
+let noteOpenStates=[];
+const DEFAULT_PANEL_ORDER=["videoPanel","commentPanel","commentPanel2","planPanel","topMemoPanel","topMemoPanel2","memoPanel"];
+const LEGACY_PANEL_ORDER=["videoPanel","planPanel","topMemoPanel","topMemoPanel2","commentPanel","commentPanel2"];
+let panelOrder=[...DEFAULT_PANEL_ORDER];
+let timeDisplayMode="real";
+let inputFocusMode=false;
+let inputFocusResumeCommentAfter=null;
+let inputFocusResumeReactionAfter=null;
+let inputFocusPreviousPanels=null;
+let inputStartVideoTime=null;
+let inputStartRealTime="";
+let inputStartRealTimestamp=0;
+let selectedCommentReaction="";
+let topNoteIndex=0;
+let topNoteIndex2=0;
+let editingIndex=null;
+let autoScroll1=true;
+let autoScroll2=true;
+let lastIndex1=-1;
+let lastIndex2=-1;
+let syncRangeSeconds=30;
+let comparisonViewMode=false;
+let reactionTimelineGroupByTag=false;
+let reactionTimelineGroupByComment=false;
+let liveRecordedCommentMode="real";
+let userFilterSortMode="count";
+let userFilterSortMode2="count";
+let openReplyBoxId="";
+let reactionMenuOpenIndex=null;
+let inputReactionMenuOpen=false;
+let onlineCommentsUnsubscribe=null;
+let onlineReactionsUnsubscribe=null;
+let onlinePlanUnsubscribe=null;
+let onlineVideoInfoUnsubscribe=null;
+let onlineParticipantsUnsubscribe=null;
+let onlineTagSettingsUnsubscribe=null;
+let onlineParticipantDocId="";
+let onlineParticipantHeartbeatTimer=null;
+let onlinePlanSaveTimer=null;
+let onlineVideoInfoSaveTimer=null;
+let onlineTagSettingsSaveTimer=null;
+
+const ONLINE_PARTICIPANT_HEARTBEAT_MS=20000;
+const ONLINE_PARTICIPANT_STALE_MS=60000;
+
+const video=document.getElementById("video");
+const seekBar=document.getElementById("seekBar");
+
+function normalizePanelOrder(order){
+  const source=Array.isArray(order) ? order : DEFAULT_PANEL_ORDER;
+  const normalized=[];
+  source.forEach(id=>{
+    if(DEFAULT_PANEL_ORDER.includes(id) && !normalized.includes(id)){
+      normalized.push(id);
+    }
+  });
+  if(normalized.length===LEGACY_PANEL_ORDER.length && normalized.every((id,index)=>id===LEGACY_PANEL_ORDER[index])){
+    return [...DEFAULT_PANEL_ORDER];
+  }
+  DEFAULT_PANEL_ORDER.forEach(id=>{
+    if(!normalized.includes(id)){
+      normalized.push(id);
+    }
+  });
+  return normalized;
+}
+
+/* ===== 授業保存 ===== */
+function saveLessons(){
+  localStorage.setItem("lessons", JSON.stringify(lessons));
+}
+
+function loadLessons(){
+  try{
+    lessons=JSON.parse(localStorage.getItem("lessons")||"[]");
+    if(!Array.isArray(lessons)){
+      lessons=[];
+    }
+  }catch(error){
+    alert("保存データの読み込みに失敗しました。保存データを初期化します。");
+    lessons=[];
+    saveLessons();
+  }
+
+  const savedParticipantName=localStorage.getItem("onlineParticipantName")||"";
+  if(document.getElementById("participantName")){
+    document.getElementById("participantName").value=savedParticipantName;
+  }
+
+  applyLessonCodeFromShareLink();
+  renderLessons();
+}
+
+function createOnlineShareLink(lessonCode){
+  const url=new URL(window.location.href);
+  url.searchParams.set("lessonCode", lessonCode||"");
+  return url.toString();
+}
+
+function displayOnlineShareLink(lessonCode){
+  const input=document.getElementById("onlineShareLinkInput");
+  if(!input)return;
+
+  if(!lessonCode){
+    input.value="";
+    return;
+  }
+
+  input.value=createOnlineShareLink(lessonCode);
+}
+
+function toggleMenuAccordion(contentId, button){
+  const content=document.getElementById(contentId);
+  if(!content)return;
+  const isClosed=content.style.display==="none";
+  content.style.display=isClosed ? "" : "none";
+  if(button){
+    button.textContent=button.textContent.replace(isClosed ? "▼" : "▲", isClosed ? "▲" : "▼");
+  }
+}
+
+function copyJoinLessonCode(){
+  const input=document.getElementById("joinLessonCode");
+  if(!input || !input.value){
+    alert("授業コードがまだありません。");
+    return;
+  }
+
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(input.value).then(()=>{
+      alert("授業コードをコピーしました。");
+    }).catch(()=>{
+      input.select();
+      alert("コピーできない場合は、選択された授業コードを手動でコピーしてください。");
+    });
+  }else{
+    input.select();
+    alert("選択された授業コードをコピーしてください。");
+  }
+}
+
+function copyOnlineShareLink(){
+  const input=document.getElementById("onlineShareLinkInput");
+  if(!input || !input.value){
+    alert("共有リンクがまだ作成されていません。");
+    return;
+  }
+
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(input.value).then(()=>{
+      alert("共有リンクをコピーしました。");
+    }).catch(()=>{
+      input.select();
+      alert("コピーできない場合は、選択されたリンクを手動でコピーしてください。");
+    });
+  }else{
+    input.select();
+    alert("選択されたリンクを手動でコピーしてください。");
+  }
+}
+
+function applyLessonCodeFromShareLink(){
+  const params=new URLSearchParams(window.location.search);
+  const lessonCode=params.get("lessonCode");
+
+  if(!lessonCode)return;
+
+  const code=lessonCode.trim().toUpperCase();
+  const input=document.getElementById("joinLessonCode");
+  const result=document.getElementById("onlineCreateResult");
+
+  if(input){
+    input.value=code;
+  }
+  displayOnlineShareLink(code);
+
+  if(result){
+    result.textContent="共有リンクから授業コードを読み込みました。参加者名を入力して『授業コードで参加』を押してください。";
+  }
+}
+
+function createLesson(){
+  const name=document.getElementById("lessonName").value.trim();
+  const lessonType=document.getElementById("lessonType").value||"video";
+  if(!name)return;
+
+  lessons.push({
+    id:Date.now(),
+    name,
+    lessonType,
+    videoStartTime:"",
+    videoLink:"",
+    onlineEnabled:false,
+    onlineLessonId:"",
+    lessonCode:"",
+    onlineParticipantName:"",
+    creatorName:"",
+    syncTargets:createDefaultSyncTargets(),
+    participants:[],
+    memos:[],
+    quickReactions:[],
+    tagSettings:createDefaultTagSettings(),
+    notes:[],
+    topNoteIndex:0,
+    topNoteIndex2:0,
+    panelOrder:[...DEFAULT_PANEL_ORDER],
+    plan:"",
+    username:"",
+    favorite:false,
+    updatedAt:new Date().toLocaleString()
+  });
+
+  document.getElementById("lessonName").value="";
+  saveLessons();
+  renderLessons();
+}
+
+function createDefaultSyncTargets(){
+  return {
+    comments:true,
+    reactions:true,
+    plan:true,
+    videoLink:true,
+    notes:false,
+    panelOrder:false
+  };
+}
+
+
+function createDefaultTagSettings(){
+  return [
+    {key:"A", label:"A", description:""},
+    {key:"B", label:"B", description:""},
+    {key:"C", label:"C", description:""}
+  ];
+}
+
+function normalizeTagSettings(settings){
+  if(!Array.isArray(settings) || settings.length===0){
+    return createDefaultTagSettings();
+  }
+
+  const normalized=[];
+  settings.forEach((tag,i)=>{
+    const fallbackKey=String.fromCharCode(65+i);
+    const key=String(tag.key || tag.label || fallbackKey).trim() || fallbackKey;
+    normalized.push({
+      key,
+      label:String(tag.label || key).trim() || key,
+      description:String(tag.description || "")
+    });
+  });
+
+  return normalized;
+}
+
+function getCurrentTagSettings(){
+  const lesson=getCurrentLesson();
+  if(lesson){
+    lesson.tagSettings=normalizeTagSettings(lesson.tagSettings);
+    return lesson.tagSettings;
+  }
+  tagSettings=normalizeTagSettings(tagSettings);
+  return tagSettings;
+}
+
+function getTagDisplayName(key){
+  if(!key)return "";
+  const tags=getCurrentTagSettings();
+  const tag=tags.find(t=>t.key===key);
+  if(!tag)return key;
+  return tag.description ? tag.key + "：" + tag.description : tag.key;
+}
+
+function renderTagOptions(){
+  const tags=getCurrentTagSettings();
+  const select=document.getElementById("commentTag");
+  if(select){
+    const currentValue=select.value;
+    select.innerHTML="";
+    const firstOption=document.createElement("option");
+    firstOption.value="";
+    firstOption.textContent="分類なし";
+    select.appendChild(firstOption);
+
+    tags.forEach(tag=>{
+      const option=document.createElement("option");
+      option.value=tag.key;
+      option.textContent=tag.description ? tag.key + "：" + tag.description : tag.key;
+      select.appendChild(option);
+    });
+
+    select.value=tags.some(tag=>tag.key===currentValue) ? currentValue : "";
+  }
+
+  renderTagFilterCheckboxes("tagFilter");
+  renderTagFilterCheckboxes("tagFilter2");
+}
+
+function renderTagFilterCheckboxes(filterId){
+  const area=document.getElementById(filterId);
+  if(!area)return;
+
+  const tags=getCurrentTagSettings();
+  const checkedValues=getSelectedTagFilters(filterId);
+  area.innerHTML="";
+
+  tags.forEach(tag=>{
+    const label=document.createElement("label");
+    const input=document.createElement("input");
+    input.type="checkbox";
+    input.value=tag.key;
+    input.checked=checkedValues.includes(tag.key);
+    input.onchange=render;
+    label.appendChild(input);
+    label.appendChild(document.createTextNode(tag.description ? tag.key + "：" + tag.description : tag.key));
+    area.appendChild(label);
+  });
+
+  const noneLabel=document.createElement("label");
+  const noneInput=document.createElement("input");
+  noneInput.type="checkbox";
+  noneInput.value="__none__";
+  noneInput.checked=checkedValues.includes("__none__");
+  noneInput.onchange=render;
+  noneLabel.appendChild(noneInput);
+  noneLabel.appendChild(document.createTextNode("観点なし"));
+  area.appendChild(noneLabel);
+}
+
+function renderTagSettingsEditor(){
+  const area=document.getElementById("tagSettingsList");
+  if(!area)return;
+  const tags=getCurrentTagSettings();
+  area.innerHTML="";
+
+  tags.forEach((tag,i)=>{
+    const div=document.createElement("div");
+    div.className="tagSettingItem";
+    div.innerHTML=`
+      タグ <input value="${escapeHTML(tag.key)}" size="3" oninput="updateTagKey(${i},this.value)">
+      内容 <input value="${escapeHTML(tag.description||"")}" placeholder="例：熟練教師" oninput="updateTagDescription(${i},this.value)">
+      <button onclick="deleteTagSetting(${i})">削除</button>
+    `;
+    area.appendChild(div);
+  });
+}
+
+function saveTagSettings(){
+  const lesson=getCurrentLesson();
+  if(!lesson)return;
+  lesson.tagSettings=normalizeTagSettings(lesson.tagSettings);
+  save();
+  renderTagOptions();
+  renderTagSettingsEditor();
+  render();
+  saveOnlineTagSettingsIfNeeded();
+}
+
+function toggleTagSettings(){
+  const area=document.getElementById("tagSettingsArea");
+  const btn=document.getElementById("tagSettingsToggleBtn");
+  if(!area || !btn)return;
+
+  if(area.style.display==="none" || area.style.display===""){
+    area.style.display="block";
+    btn.textContent="観点タグ設定: 表示";
+  }else{
+    area.style.display="none";
+    btn.textContent="観点タグ設定: 非表示";
+  }
+}
+
+function addTagSetting(){
+  const lesson=getCurrentLesson();
+  if(!lesson)return;
+  lesson.tagSettings=normalizeTagSettings(lesson.tagSettings);
+  const nextKey=String.fromCharCode(65 + lesson.tagSettings.length);
+  lesson.tagSettings.push({key:nextKey, label:nextKey, description:""});
+  saveTagSettings();
+}
+
+function updateTagKey(i,value){
+  const lesson=getCurrentLesson();
+  if(!lesson || !lesson.tagSettings[i])return;
+  const oldKey=lesson.tagSettings[i].key;
+  const newKey=String(value||"").trim().toUpperCase();
+  if(!newKey)return;
+  lesson.tagSettings[i].key=newKey;
+  lesson.tagSettings[i].label=newKey;
+  memos.forEach(m=>{
+    if(m.tag===oldKey){
+      m.tag=newKey;
+    }
+  });
+  saveTagSettings();
+}
+
+function updateTagDescription(i,value){
+  const lesson=getCurrentLesson();
+  if(!lesson || !lesson.tagSettings[i])return;
+  lesson.tagSettings[i].description=value||"";
+  lesson.tagSettings=normalizeTagSettings(lesson.tagSettings);
+  save();
+  renderTagOptions();
+  render();
+
+  if(onlineTagSettingsSaveTimer){
+    clearTimeout(onlineTagSettingsSaveTimer);
+  }
+  onlineTagSettingsSaveTimer=setTimeout(()=>{
+    onlineTagSettingsSaveTimer=null;
+    saveOnlineTagSettingsIfNeeded();
+  },600);
+}
+
+function deleteTagSetting(i){
+  const lesson=getCurrentLesson();
+  if(!lesson || !lesson.tagSettings[i])return;
+  if(!confirm("このタグを削除します。既存コメントに付いている同じタグは『分類なし』になります。よろしいですか？"))return;
+  const key=lesson.tagSettings[i].key;
+  lesson.tagSettings.splice(i,1);
+  memos.forEach(m=>{
+    if(m.tag===key){
+      m.tag="";
+    }
+  });
+  saveTagSettings();
+}
+
+function saveOnlineTagSettingsIfNeeded(){
+  const lesson=getCurrentLesson();
+  if(!lesson || !lesson.onlineEnabled || !lesson.onlineLessonId)return;
+  if(!window.updateOnlineTagSettingsToFirebase)return;
+
+  window.updateOnlineTagSettingsToFirebase(lesson.onlineLessonId, normalizeTagSettings(lesson.tagSettings)).catch(error=>{
+    alert("オンライン観点タグ設定の保存に失敗しました：" + error.message);
+  });
+}
+
+function generateOnlineLessonId(){
+  return "online_" + Date.now() + "_" + Math.random().toString(36).slice(2,8);
+}
+
+function generateLessonCode(){
+  return Math.random().toString(36).slice(2,8).toUpperCase();
+}
+
+function normalizeOnlineLessonFields(lesson){
+  if(lesson.onlineEnabled===undefined){
+    lesson.onlineEnabled=false;
+  }
+  if(!lesson.onlineLessonId){
+    lesson.onlineLessonId=lesson.onlineEnabled ? generateOnlineLessonId() : "";
+  }
+  if(!lesson.lessonCode){
+    lesson.lessonCode=lesson.onlineEnabled ? generateLessonCode() : "";
+  }
+  if(!lesson.onlineParticipantName){
+    lesson.onlineParticipantName="";
+  }
+  if(!lesson.creatorName){
+    lesson.creatorName="";
+  }
+  if(!lesson.syncTargets){
+    lesson.syncTargets=createDefaultSyncTargets();
+  }
+  if(!Array.isArray(lesson.participants)){
+    lesson.participants=[];
+  }
+  lesson.tagSettings=normalizeTagSettings(lesson.tagSettings);
+}
+
+
+async function createOnlineLessonPlaceholder(){
+  const participantName=document.getElementById("participantName").value.trim();
+  const name=document.getElementById("lessonName").value.trim();
+  const lessonType=document.getElementById("lessonType").value||"video";
+  const result=document.getElementById("onlineCreateResult");
+
+  if(result){
+    result.textContent="";
+  }
+
+  if(!participantName){
+    alert("参加者名を入力してください。");
+    return;
+  }
+
+  if(!name){
+    alert("授業名を入力してください。");
+    return;
+  }
+
+  if(!window.createOnlineLessonOnFirebase){
+    const message="Firebase保存処理の準備ができていません。ページを再読み込みしてからもう一度試してください。";
+    if(result){
+      result.textContent=message;
+    }
+    alert(message);
+    return;
+  }
+
+  const onlineLessonId=generateOnlineLessonId();
+  const lessonCode=generateLessonCode();
+  const localId=Date.now();
+
+  localStorage.setItem("onlineParticipantName", participantName);
+
+  const lessonData={
+    id:localId,
+    name,
+    lessonType,
+    videoStartTime:"",
+    videoLink:"",
+    onlineEnabled:true,
+    onlineLessonId,
+    lessonCode,
+    onlineParticipantName:participantName,
+    creatorName:participantName,
+    syncTargets:createDefaultSyncTargets(),
+    participants:[{
+      userId:"local_" + localId,
+      name:participantName,
+      role:"creator",
+      joinedAt:new Date().toLocaleString()
+    }],
+    memos:[],
+    quickReactions:[],
+    tagSettings:createDefaultTagSettings(),
+    notes:[],
+    topNoteIndex:0,
+    topNoteIndex2:0,
+    panelOrder:[...DEFAULT_PANEL_ORDER],
+    plan:"",
+    username:participantName,
+    favorite:false,
+    updatedAt:new Date().toLocaleString()
+  };
+
+  try{
+    if(result){
+      result.textContent="オンライン授業をFirebaseに作成中...";
+    }
+    await window.createOnlineLessonOnFirebase(lessonData);
+  }catch(error){
+    const message="Firebaseへのオンライン授業作成に失敗しました：" + error.message;
+    if(result){
+      result.textContent=message;
+    }
+    alert(message);
+    return;
+  }
+
+  lessons.push(lessonData);
+
+  document.getElementById("lessonName").value="";
+  document.getElementById("joinLessonCode").value=lessonCode;
+  displayOnlineShareLink(lessonCode);
+  saveLessons();
+  renderLessons();
+
+  const successMessage="オンライン授業の作成成功：授業コード " + lessonCode + " / Firestore授業ID " + onlineLessonId + " / 共有リンクを作成しました";
+  if(result){
+    result.textContent=successMessage;
+  }
+
+  alert("Firebaseにオンライン授業を作成しました。\n授業コード: " + lessonCode + "\nFirestore授業ID: " + onlineLessonId + "\n\n授業コード参加と一部リアルタイム同期を実装しています。");
+}
+async function joinOnlineLessonPlaceholder(){
+  const participantName=document.getElementById("participantName").value.trim();
+  const code=document.getElementById("joinLessonCode").value.trim().toUpperCase();
+  const result=document.getElementById("onlineCreateResult");
+  const joinError=document.getElementById("joinOnlineError");
+
+  if(result){
+    result.textContent="";
+  }
+  if(joinError){
+    joinError.textContent="";
+  }
+
+  if(!participantName){
+    alert("参加者名を入力してください。");
+    return;
+  }
+
+  if(!code){
+    alert("授業コードを入力してください。");
+    return;
+  }
+
+  if(!window.joinOnlineLessonFromFirebase){
+    const message="Firebase参加処理の準備ができていません。ページを再読み込みしてからもう一度試してください。";
+    if(result){
+      result.textContent=message;
+    }
+    alert(message);
+    return;
+  }
+
+  localStorage.setItem("onlineParticipantName", participantName);
+
+  try{
+    if(result){
+      result.textContent="授業コードを確認中...";
+    }
+
+    const cloudLesson=await window.joinOnlineLessonFromFirebase(code, participantName);
+    const existingIndex=lessons.findIndex(l=>l.onlineLessonId===cloudLesson.onlineLessonId);
+    const localLesson={
+      id: existingIndex>=0 ? lessons[existingIndex].id : Date.now(),
+      name: cloudLesson.name||"オンライン授業",
+      lessonType: cloudLesson.lessonType||"video",
+      videoStartTime: cloudLesson.videoStartTime||"",
+      videoLink: cloudLesson.videoLink||"",
+      onlineEnabled:true,
+      onlineLessonId:cloudLesson.onlineLessonId||"",
+      lessonCode:cloudLesson.lessonCode||code,
+      onlineParticipantName:participantName,
+      creatorName:cloudLesson.creatorName||cloudLesson.onlineParticipantName||"",
+      syncTargets:cloudLesson.syncTargets||createDefaultSyncTargets(),
+      participants:Array.isArray(cloudLesson.participants) ? cloudLesson.participants : [],
+      memos:Array.isArray(cloudLesson.memos) ? cloudLesson.memos : [],
+      quickReactions:Array.isArray(cloudLesson.quickReactions) ? cloudLesson.quickReactions : [],
+      tagSettings:normalizeTagSettings(cloudLesson.tagSettings),
+      notes:[],
+      topNoteIndex:0,
+      topNoteIndex2:0,
+      panelOrder:[...DEFAULT_PANEL_ORDER],
+      plan:cloudLesson.plan||"",
+      username:participantName,
+      favorite:false,
+      updatedAt:new Date().toLocaleString()
+    };
+
+    if(existingIndex>=0){
+      lessons[existingIndex]=localLesson;
+    }else{
+      lessons.push(localLesson);
+    }
+
+    saveLessons();
+    renderLessons();
+
+    displayOnlineShareLink(localLesson.lessonCode);
+
+    if(result){
+      result.textContent="オンライン授業に参加成功：" + localLesson.name + " / 授業コード " + localLesson.lessonCode + " / Firestore授業ID " + localLesson.onlineLessonId;
+    }
+    if(joinError){
+      joinError.textContent="";
+    }
+
+    openLesson(localLesson.id);
+    alert("オンライン授業に参加しました。\n授業名: " + localLesson.name + "\n授業コード: " + localLesson.lessonCode + "\nFirestore授業ID: " + localLesson.onlineLessonId + "\n\nコメント同期・リアクション同期・指導案同期・動画情報同期を実装しています。");
+  }catch(error){
+    const message=error.message||"授業コードが見つかりません。";
+    if(result){
+      result.textContent=message;
+    }
+    if(joinError){
+      joinError.textContent="コードが違います。確認してもう一度入力してください。";
+    }
+    alert(message);
+  }
+}
+
+function countReplies(memos){
+  let total=0;
+  memos.forEach(m=>{
+    total += (m.replies||[]).length;
+  });
+  return total;
+}
+
+function lessonTypeLabel(type){
+  if(type==="liveRecorded")return "生授業観察モード（録画あり）";
+  if(type==="liveOnly")return "生授業観察モード（録画なし）";
+  return "動画振り返りモード";
+}
+
+function renderLessons(){
+  const area=document.getElementById("lessonList");
+  area.innerHTML="";
+
+  const searchText=document.getElementById("lessonSearch").value.trim();
+  const favoriteOnly=document.getElementById("favoriteOnly").checked;
+  const sortType=document.getElementById("lessonSort").value;
+
+  let displayLessons=lessons.map((lesson,i)=>({lesson,i}));
+
+  if(searchText){
+    displayLessons=displayLessons.filter(item=>item.lesson.name.includes(searchText));
+  }
+
+  if(favoriteOnly){
+    displayLessons=displayLessons.filter(item=>item.lesson.favorite);
+  }
+
+  if(sortType==="updatedDesc"){
+    displayLessons.sort((a,b)=>new Date(b.lesson.updatedAt||0)-new Date(a.lesson.updatedAt||0));
+  }else if(sortType==="updatedAsc"){
+    displayLessons.sort((a,b)=>new Date(a.lesson.updatedAt||0)-new Date(b.lesson.updatedAt||0));
+  }else if(sortType==="favorite"){
+    displayLessons.sort((a,b)=>(b.lesson.favorite?1:0)-(a.lesson.favorite?1:0));
+  }
+
+  displayLessons.forEach(item=>{
+    const lesson=item.lesson;
+    const i=item.i;
+    const div=document.createElement("div");
+    div.className="lessonItem";
+
+    const commentCount=(lesson.memos||[]).length;
+    const replyCount=countReplies(lesson.memos||[]);
+    const updatedAt=lesson.updatedAt||"";
+    const typeLabel=lessonTypeLabel(lesson.lessonType);
+    const onlineLabel=lesson.onlineEnabled ? "オンライン準備:あり / 授業コード:" + (lesson.lessonCode||"") + "<br>" : "";
+
+    div.innerHTML=`
+      <b>${lesson.favorite ? "★ " : ""}${lesson.name}</b><br>
+      <div class="lessonMeta">
+        コメント:${commentCount}件 / 返信:${replyCount}件<br>
+        授業タイプ:${typeLabel}<br>
+        ${onlineLabel}
+        最終更新:${updatedAt}
+      </div>
+      <button onclick="openLesson(${lesson.id})">開く</button>
+      <button onclick="toggleFavorite(${i})">${lesson.favorite ? "お気に入り解除" : "お気に入り"}</button>
+      <button onclick="exportLessonCSV(${i})">CSV出力</button>
+      <button onclick="deleteLesson(${i})">削除</button>
+    `;
+    area.appendChild(div);
+  });
+}
+
+function toggleFavorite(i){
+  lessons[i].favorite = !lessons[i].favorite;
+  lessons[i].updatedAt = new Date().toLocaleString();
+  saveLessons();
+  renderLessons();
+}
+
+function openLesson(id){
+  save();
+
+  const lesson=lessons.find(l=>l.id===id);
+  if(!lesson)return;
+
+  if(!lesson.lessonType){
+    lesson.lessonType="video";
+  }
+  if(!lesson.videoStartTime){
+    lesson.videoStartTime="";
+  }
+  if(!lesson.videoLink){
+    lesson.videoLink="";
+  }
+  normalizeOnlineLessonFields(lesson);
+
+  currentLessonId=id;
+  memos=lesson.memos||[];
+  quickReactions=lesson.quickReactions||[];
+  lesson.tagSettings=normalizeTagSettings(lesson.tagSettings);
+  tagSettings=lesson.tagSettings;
+  notes=lesson.notes||[];
+  noteOpenStates=[];
+  panelOrder=normalizePanelOrder(lesson.panelOrder);
+  topNoteIndex=Number(lesson.topNoteIndex)||0;
+  topNoteIndex2=Number(lesson.topNoteIndex2)||0;
+
+  document.getElementById("planEditor").innerHTML=lesson.plan||"";
+  document.getElementById("username").value=lesson.username||"";
+  document.getElementById("videoStartTime").value=lesson.videoStartTime||"";
+  document.getElementById("videoLinkInput").value=lesson.videoLink||"";
+  updateVideoLinkDisplay();
+  document.getElementById("currentLessonTitle").textContent=lesson.name;
+
+  document.getElementById("menuScreen").style.display="none";
+  document.getElementById("appScreen").style.display="block";
+
+  applyPanelOrder();
+  resetInitialPanels();
+  renderTagOptions();
+  renderTagSettingsEditor();
+  render();
+  renderNotes();
+  renderTopNote();
+  startOnlineCommentSyncIfNeeded();
+}
+
+function deleteLesson(i){
+  if(!confirm("この授業を削除します。よろしいですか？")){
+    return;
+  }
+
+  lessons.splice(i,1);
+  saveLessons();
+  renderLessons();
+}
+
+function backToMenu(){
+  save();
+  stopOnlineCommentSync();
+  currentLessonId=null;
+  document.getElementById("appScreen").style.display="none";
+  document.getElementById("menuScreen").style.display="block";
+  renderLessons();
+}
+
+/* ===== 保存 ===== */
+function save(){
+  if(currentLessonId===null)return;
+
+  const lesson=lessons.find(l=>l.id===currentLessonId);
+  if(!lesson)return;
+
+  lesson.memos=memos;
+  lesson.quickReactions=quickReactions;
+  lesson.tagSettings=normalizeTagSettings(lesson.tagSettings||tagSettings);
+  lesson.notes=notes;
+  lesson.videoStartTime=document.getElementById("videoStartTime").value||"";
+  lesson.videoLink=document.getElementById("videoLinkInput").value||"";
+  lesson.topNoteIndex=topNoteIndex;
+  lesson.topNoteIndex2=topNoteIndex2;
+  lesson.panelOrder=panelOrder;
+  lesson.plan=document.getElementById("planEditor").innerHTML;
+  lesson.username=document.getElementById("username").value;
+  lesson.updatedAt=new Date().toLocaleString();
+
+  saveLessons();
+}
+
+document.getElementById("planEditor").addEventListener("input", save);
+document.getElementById("planEditor").addEventListener("input", saveOnlinePlanIfNeeded);
+document.getElementById("username").addEventListener("input", save);
+
+/* ===== 動画 ===== */
+video.ontimeupdate=()=>{
+  seekBar.value=(video.currentTime/video.duration)*100||0;
+  updateVideoTimeDisplay();
+  highlight();
+};
+
+video.onclick=()=>{
+  togglePlayPause();
+};
+
+video.onplay=()=>{
+  updatePlayPauseButton();
+};
+
+video.onpause=()=>{
+  updatePlayPauseButton();
+};
+
+video.onloadedmetadata=()=>{
+  updateVideoTimeDisplay();
+  updatePlayPauseButton();
+  renderReactionTimeline();
+};
+
+seekBar.oninput=()=>{
+  video.currentTime=(seekBar.value/100)*video.duration;
+};
+
+document.getElementById("videoInput").onchange=e=>{
+  if(!e.target.files[0])return;
+  video.src=URL.createObjectURL(e.target.files[0]);
+};
+
+document.getElementById("volume").oninput=e=>{
+  video.volume=e.target.value;
+};
+
+function updatePlayPauseButton(){
+  const btn=document.getElementById("playPauseBtn");
+  if(!btn)return;
+  btn.textContent=video.paused ? "▶" : "⏸";
+  btn.title=video.paused ? "再生" : "一時停止";
+  btn.setAttribute("aria-label", video.paused ? "再生" : "一時停止");
+}
+
+function togglePlayPause(){
+  if(video.paused){
+    video.play();
+  }else{
+    video.pause();
+  }
+  updatePlayPauseButton();
+}
+
+function skipBack10(){
+  video.currentTime=Math.max(0, (Number(video.currentTime)||0)-10);
+  updateVideoTimeDisplay();
+  highlight();
+}
+
+function skipForward10(){
+  const duration=Number(video.duration)||0;
+  const next=(Number(video.currentTime)||0)+10;
+  video.currentTime=duration ? Math.min(duration, next) : next;
+  updateVideoTimeDisplay();
+  highlight();
+}
+
+function changePlaybackRate(value){
+  video.playbackRate=Number(value)||1;
+}
+
+/* ===== 時間 ===== */
+function format(t){
+  const negative=Number(t)<0;
+  const abs=Math.abs(Number(t)||0);
+  let m=Math.floor(abs/60);
+  let s=Math.floor(abs%60);
+  return `${negative ? "-" : ""}${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
+
+function updateVideoTimeDisplay(){
+  const display=document.getElementById("videoTimeDisplay");
+  if(!display)return;
+
+  const current=isNaN(video.currentTime) ? 0 : video.currentTime;
+  const duration=isNaN(video.duration) ? 0 : video.duration;
+  display.textContent=`${format(current)} / ${format(duration)}`;
+}
+
+function formatRealTime(date){
+  const h=String(date.getHours()).padStart(2,"0");
+  const m=String(date.getMinutes()).padStart(2,"0");
+  const s=String(date.getSeconds()).padStart(2,"0");
+  return `${h}:${m}:${s}`;
+}
+
+function getCurrentLesson(){
+  if(currentLessonId===null)return null;
+  return lessons.find(l=>l.id===currentLessonId)||null;
+}
+
+function isLiveLesson(){
+  const lesson=getCurrentLesson();
+  return lesson && (lesson.lessonType==="liveRecorded" || lesson.lessonType==="liveOnly");
+}
+
+function isLiveRecordedLesson(){
+  const lesson=getCurrentLesson();
+  return lesson && lesson.lessonType==="liveRecorded";
+}
+
+function isLiveRecordedVideoRecordMode(){
+  return !!isLiveRecordedLesson() && liveRecordedCommentMode==="video";
+}
+
+function isInputFocusAvailable(){
+  return !!isLiveLesson();
+}
+
+function getCurrentParticipantName(){
+  const lesson=getCurrentLesson();
+  if(lesson && lesson.onlineParticipantName){
+    return lesson.onlineParticipantName;
+  }
+  const username=document.getElementById("username");
+  return username ? username.value : "";
+}
+
+function isOwnMemo(m){
+  const name=getCurrentParticipantName();
+  if(!name)return false;
+  return (m.participantName&&m.participantName===name) || (m.user&&m.user===name);
+}
+
+function parseClockTime(value){
+  if(!value)return null;
+  const parts=value.split(":").map(Number);
+  if(parts.length<2)return null;
+  const h=parts[0];
+  const m=parts[1];
+  const s=parts[2]||0;
+  if(isNaN(h)||isNaN(m)||isNaN(s))return null;
+  return h*3600 + m*60 + s;
+}
+
+function realTimestampToSeconds(timestamp){
+  const date=new Date(timestamp);
+  return date.getHours()*3600 + date.getMinutes()*60 + date.getSeconds();
+}
+
+function realTimestampToVideoTime(timestamp){
+  const lesson=getCurrentLesson();
+  const start=parseClockTime(lesson ? lesson.videoStartTime : "");
+  if(start===null)return null;
+
+  return realTimestampToSeconds(timestamp)-start;
+}
+
+function updateVideoStartTime(value){
+  const lesson=getCurrentLesson();
+  if(!lesson)return;
+  lesson.videoStartTime=value||"";
+  save();
+  saveOnlineVideoInfoIfNeeded();
+  render();
+  renderReactionTimeline();
+}
+
+function updateVideoLink(value){
+  const lesson=getCurrentLesson();
+  if(!lesson)return;
+  lesson.videoLink=value||"";
+  save();
+  updateVideoLinkDisplay();
+  saveOnlineVideoInfoIfNeeded();
+}
+
+function updateVideoLinkDisplay(){
+  return;
+}
+
+function displayMemoTime(m){
+  if(isLiveRecordedLesson() && m.realTimestamp){
+    if(timeDisplayMode==="video"){
+      const convertedTime=realTimestampToVideoTime(m.realTimestamp);
+      if(convertedTime!==null){
+        return format(convertedTime);
+      }
+    }
+    return m.realTime||format(m.time);
+  }
+  if(isLiveLesson() && m.realTime){
+    return m.realTime;
+  }
+  return format(m.time);
+}
+
+function csvMemoTime(m){
+  if(m.realTime){
+    return m.realTime;
+  }
+  return format(m.time);
+}
+
+function getMemoSortValue(m){
+  if(isLiveRecordedLesson()){
+    return getCommentSyncTime(m)*1000;
+  }
+  if(m.realTimestamp){
+    return Number(m.realTimestamp);
+  }
+  return (Number(m.time)||0)*1000;
+}
+
+function getMemoDisplaySortValue(m){
+  if(timeDisplayMode==="real"){
+    if(m.realTimestamp){
+      return Number(m.realTimestamp);
+    }
+    return (Number(m.time)||0)*1000;
+  }
+  return getCommentSyncTime(m)*1000;
+}
+
+function sortMemosByTime(){
+  memos.sort((a,b)=>getMemoDisplaySortValue(a)-getMemoDisplaySortValue(b));
+}
+
+function csvEscape(value){
+  return `"${String(value||"").replaceAll('"','""')}"`;
+}
+
+function escapeHTML(value){
+  return String(value||"")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#39;");
+}
+
+function downloadText(filename, text, type){
+  const blob=new Blob([text],{type});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  a.click();
+}
+
+function downloadCSV(filename, csv){
+  downloadText(filename, "\uFEFF"+csv, "text/csv;charset=utf-8");
+}
+
+function downloadJSON(filename, data){
+  downloadText(filename, JSON.stringify(data,null,2), "application/json");
+}
+
+function memoCSVRows(memos, lessonName){
+  let csv="";
+
+  (memos||[]).forEach(m=>{
+    const prefix=lessonName!==undefined ? `${csvEscape(lessonName)},` : "";
+    csv+=`${prefix}${csvMemoTime(m)},${m.user||""},${m.phase||""},${m.tag||""},${csvEscape(m.text)},${m.color||""}\n`;
+    (m.replies||[]).forEach(r=>{
+      csv+=`${prefix}${csvMemoTime(m)},${r.user||""},${m.phase||""},返信,${csvEscape("(返信) " + String(r.text))},\n`;
+    });
+  });
+
+  return csv;
+}
+
+function createCountTable(title, rowLabel, rows, columns, counts){
+  let html=`<b>${title}</b><br>`;
+
+  if(rows.length===0){
+    return html+"コメントなし";
+  }
+
+  html+=`<table><tr><th>${rowLabel}</th>`;
+  columns.forEach(column=>{
+    html+=`<th>${column}</th>`;
+  });
+  html+="</tr>";
+
+  rows.forEach(row=>{
+    html+=`<tr><td>${row}</td>`;
+    columns.forEach(column=>{
+      html+=`<td>${counts[row][column]||0}</td>`;
+    });
+    html+="</tr>";
+  });
+
+  return html+"</table>";
+}
+
+
+function getCurrentLesson(){
+  if(currentLessonId===null)return null;
+  return lessons.find(l=>l.id===currentLessonId)||null;
+}
+
+function isOnlineLessonActive(){
+  const lesson=getCurrentLesson();
+  return !!(lesson && lesson.onlineEnabled && lesson.onlineLessonId);
+}
+
+function setOnlineStatusPanelVisible(visible){
+  const panel=document.getElementById("onlineStatusPanel");
+  if(panel){
+    panel.style.display=visible ? "block" : "none";
+  }
+
+  const archivePanel=document.getElementById("onlineArchivePanel");
+  if(archivePanel){
+    archivePanel.style.display=visible ? "block" : "none";
+  }
+
+  const checkPanel=document.getElementById("onlineCheckPanel");
+  if(checkPanel){
+    checkPanel.style.display=visible ? "block" : "none";
+  }
+}
+
+function setOnlineConnectionStatus(status){
+  const el=document.getElementById("onlineConnectionStatus");
+  if(el){
+    el.textContent=status;
+  }
+}
+
+function getOnlineUserRole(lesson){
+  if(!lesson || !lesson.onlineEnabled)return "";
+
+  const participantName=lesson.onlineParticipantName||document.getElementById("username").value||"";
+  const creatorName=lesson.creatorName||"";
+
+  if(creatorName && participantName && creatorName===participantName){
+    return "作成者";
+  }
+
+  return "参加者";
+}
+
+function setOnlineUserRole(role){
+  const el=document.getElementById("onlineUserRole");
+  if(el){
+    el.textContent=role||"未接続";
+  }
+}
+
+function getParticipantLastSeenMillis(participant){
+  if(!participant)return 0;
+  if(Number(participant.lastSeenAtMillis)){
+    return Number(participant.lastSeenAtMillis);
+  }
+  const value=participant.lastSeenAt;
+  if(!value)return 0;
+  if(typeof value.toMillis==="function"){
+    return value.toMillis();
+  }
+  if(typeof value.seconds==="number"){
+    return value.seconds*1000;
+  }
+  const parsed=Date.parse(value);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
+function getVisibleOnlineParticipants(participants){
+  if(!Array.isArray(participants))return [];
+
+  const now=Date.now();
+  const latestByNameRole=new Map();
+
+  participants.forEach(participant=>{
+    const name=participant.name||"名前なし";
+    const role=participant.role||"participant";
+    const lastSeen=getParticipantLastSeenMillis(participant);
+
+    if(participant.active===false)return;
+    if(!lastSeen || now-lastSeen>ONLINE_PARTICIPANT_STALE_MS)return;
+
+    const key=name + "||" + role;
+    const current=latestByNameRole.get(key);
+    if(!current || lastSeen>getParticipantLastSeenMillis(current)){
+      latestByNameRole.set(key, participant);
+    }
+  });
+
+  return Array.from(latestByNameRole.values()).sort((a,b)=>{
+    const nameCompare=(a.name||"").localeCompare(b.name||"", "ja");
+    if(nameCompare!==0)return nameCompare;
+    return getParticipantLastSeenMillis(b)-getParticipantLastSeenMillis(a);
+  });
+}
+
+function canDeleteMemo(m){
+  if(!isOnlineLessonActive())return true;
+
+  const lesson=getCurrentLesson();
+  const participantName=lesson.onlineParticipantName||document.getElementById("username").value||"";
+  const role=getOnlineUserRole(lesson);
+
+  if(role==="作成者")return true;
+  if(!participantName)return false;
+
+  return (m.participantName&&m.participantName===participantName) || (m.user&&m.user===participantName);
+}
+
+function getDeleteButtonHTML(i,m){
+  if(canDeleteMemo(m)){
+    return `<button class="iconButton" onclick="del(${i})" title="削除" aria-label="削除">
+      <svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true">
+        <path d="M6 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M9 8V6h6v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M8 8l1 11h6l1-11" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
+    </button>`;
+  }
+
+  return `<button class="iconButton" disabled title="オンライン授業では、自分のコメントまたは作成者のみ削除できます。" aria-label="削除不可">
+    <svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true">
+      <path d="M6 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M9 8V6h6v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M8 8l1 11h6l1-11" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    </svg>
+  </button>`;
+}
+
+function renderOnlineParticipants(participants){
+  const area=document.getElementById("onlineParticipantsList");
+  if(!area)return;
+
+  const visibleParticipants=getVisibleOnlineParticipants(participants);
+
+  if(visibleParticipants.length===0){
+    area.textContent="なし";
+    return;
+  }
+
+  area.innerHTML="";
+  visibleParticipants.forEach(participant=>{
+    const span=document.createElement("span");
+    span.className="onlineParticipantName";
+    span.textContent=(participant.name||"名前なし") + (participant.role==="creator" ? "（作成者）" : "");
+    area.appendChild(span);
+  });
+}
+
+function getOnlineParticipantDocId(lesson){
+  if(!lesson || !lesson.onlineLessonId)return "";
+  const key="onlineParticipantDocId_" + lesson.onlineLessonId;
+  let id=sessionStorage.getItem(key);
+  if(!id){
+    id="participant_" + Date.now() + "_" + Math.random().toString(36).slice(2,8);
+    sessionStorage.setItem(key,id);
+  }
+  return id;
+}
+
+function stopOnlineParticipantHeartbeat(){
+  if(onlineParticipantHeartbeatTimer){
+    clearInterval(onlineParticipantHeartbeatTimer);
+    onlineParticipantHeartbeatTimer=null;
+  }
+}
+
+function startOnlineParticipantHeartbeat(lesson, participantName, role){
+  stopOnlineParticipantHeartbeat();
+
+  if(!lesson || !lesson.onlineLessonId || !onlineParticipantDocId || !window.registerOnlineParticipantToFirebase)return;
+
+  onlineParticipantHeartbeatTimer=setInterval(()=>{
+    const currentLesson=getCurrentLesson();
+    if(!currentLesson || currentLesson.onlineLessonId!==lesson.onlineLessonId){
+      stopOnlineParticipantHeartbeat();
+      return;
+    }
+
+    window.registerOnlineParticipantToFirebase(lesson.onlineLessonId, onlineParticipantDocId, {
+      name:participantName,
+      role
+    }).catch(error=>{
+      console.warn("参加者Heartbeatの更新に失敗しました", error);
+    });
+  }, ONLINE_PARTICIPANT_HEARTBEAT_MS);
+}
+
+function stopOnlineCommentSync(){
+  if(onlineCommentsUnsubscribe){
+    onlineCommentsUnsubscribe();
+    onlineCommentsUnsubscribe=null;
+  }
+  if(onlineReactionsUnsubscribe){
+    onlineReactionsUnsubscribe();
+    onlineReactionsUnsubscribe=null;
+  }
+  if(onlinePlanUnsubscribe){
+    onlinePlanUnsubscribe();
+    onlinePlanUnsubscribe=null;
+  }
+  if(onlineVideoInfoUnsubscribe){
+    onlineVideoInfoUnsubscribe();
+    onlineVideoInfoUnsubscribe=null;
+  }
+  if(onlineParticipantsUnsubscribe){
+    onlineParticipantsUnsubscribe();
+    onlineParticipantsUnsubscribe=null;
+  }
+  if(onlineTagSettingsUnsubscribe){
+    onlineTagSettingsUnsubscribe();
+    onlineTagSettingsUnsubscribe=null;
+  }
+  stopOnlineParticipantHeartbeat();
+
+  const lesson=getCurrentLesson();
+  if(lesson && lesson.onlineEnabled && lesson.onlineLessonId && onlineParticipantDocId && window.removeOnlineParticipantFromFirebase){
+    window.removeOnlineParticipantFromFirebase(lesson.onlineLessonId, onlineParticipantDocId);
+  }
+  onlineParticipantDocId="";
+  window.onlineParticipantDocIdForBeforeUnload="";
+  window.currentLessonForBeforeUnload=null;
+  setOnlineStatusPanelVisible(false);
+  setOnlineConnectionStatus("未接続");
+  setOnlineUserRole("未接続");
+  renderOnlineParticipants([]);
+
+  if(onlinePlanSaveTimer){
+    clearTimeout(onlinePlanSaveTimer);
+    onlinePlanSaveTimer=null;
+  }
+  if(onlineVideoInfoSaveTimer){
+    clearTimeout(onlineVideoInfoSaveTimer);
+    onlineVideoInfoSaveTimer=null;
+  }
+}
+
+
+function stopOnlineCommentAndReactionListeners(){
+  if(onlineCommentsUnsubscribe){
+    onlineCommentsUnsubscribe();
+    onlineCommentsUnsubscribe=null;
+  }
+  if(onlineReactionsUnsubscribe){
+    onlineReactionsUnsubscribe();
+    onlineReactionsUnsubscribe=null;
+  }
+}
+
+function getMaxMemoSortTimestamp(){
+  if(!memos || memos.length===0)return 0;
+  return Math.max(...memos.map(m=>getMemoSortValue(m)||0));
+}
+
+function getMaxReactionSortTimestamp(){
+  if(!quickReactions || quickReactions.length===0)return 0;
+  return Math.max(...quickReactions.map(r=>(Number(r.realTimestamp)||0) || ((Number(r.time)||0)*1000)));
+}
+
+function mergeOnlineComments(newComments){
+  const commentMap={};
+  memos.forEach(m=>{
+    if(m.id){
+      commentMap[m.id]=m;
+    }
+  });
+
+  newComments.forEach(comment=>{
+    if(comment.id && commentMap[comment.id]){
+      Object.assign(commentMap[comment.id], comment);
+    }else{
+      memos.push(comment);
+    }
+  });
+
+  sortMemosByTime();
+}
+
+function mergeOnlineReactions(newReactions){
+  const reactionMap={};
+  quickReactions.forEach(r=>{
+    if(r.id){
+      reactionMap[r.id]=r;
+    }
+  });
+
+  newReactions.forEach(reaction=>{
+    if(reaction.id && reactionMap[reaction.id]){
+      Object.assign(reactionMap[reaction.id], reaction);
+    }else{
+      quickReactions.push(reaction);
+    }
+  });
+
+  quickReactions.sort((a,b)=>getReactionVideoTime(a)-getReactionVideoTime(b));
+}
+
+function resumeOnlineCommentAndReactionListenersIfNeeded(){
+  const lesson=getCurrentLesson();
+  if(!lesson || !lesson.onlineEnabled || !lesson.onlineLessonId)return;
+  if(inputFocusMode && isInputFocusAvailable())return;
+
+  const commentAfter=inputFocusResumeCommentAfter;
+  const reactionAfter=inputFocusResumeReactionAfter;
+  const useCommentAfter=commentAfter!==null && window.listenOnlineCommentsAfterFromFirebase;
+  const useReactionAfter=reactionAfter!==null && window.listenOnlineReactionsAfterFromFirebase;
+
+  if(!onlineCommentsUnsubscribe){
+    const listenComments=useCommentAfter ? window.listenOnlineCommentsAfterFromFirebase : window.listenOnlineCommentsFromFirebase;
+    if(listenComments){
+      if(useCommentAfter){
+        onlineCommentsUnsubscribe=listenComments(
+          lesson.onlineLessonId,
+          commentAfter,
+          comments=>{
+            const currentLesson=getCurrentLesson();
+            if(!currentLesson || currentLesson.onlineLessonId!==lesson.onlineLessonId)return;
+
+            mergeOnlineComments(comments);
+            render();
+            renderReactionTimeline();
+            setOnlineConnectionStatus("保存済み");
+            save();
+          },
+          error=>{
+            setOnlineConnectionStatus("通信失敗");
+            alert("オンラインコメントの同期に失敗しました：" + error.message);
+          }
+        );
+      }else{
+        onlineCommentsUnsubscribe=listenComments(
+          lesson.onlineLessonId,
+          comments=>{
+          const currentLesson=getCurrentLesson();
+          if(!currentLesson || currentLesson.onlineLessonId!==lesson.onlineLessonId)return;
+
+            memos=comments;
+            sortMemosByTime();
+            render();
+            renderReactionTimeline();
+            setOnlineConnectionStatus("保存済み");
+            save();
+          },
+          error=>{
+            setOnlineConnectionStatus("通信失敗");
+            alert("オンラインコメントの同期に失敗しました：" + error.message);
+          }
+        );
+      }
+    }
+  }
+
+  if(!onlineReactionsUnsubscribe){
+    const listenReactions=useReactionAfter ? window.listenOnlineReactionsAfterFromFirebase : window.listenOnlineReactionsFromFirebase;
+    if(listenReactions){
+      if(useReactionAfter){
+        onlineReactionsUnsubscribe=listenReactions(
+          lesson.onlineLessonId,
+          reactionAfter,
+          reactions=>{
+            const currentLesson=getCurrentLesson();
+            if(!currentLesson || currentLesson.onlineLessonId!==lesson.onlineLessonId)return;
+
+            mergeOnlineReactions(reactions);
+            renderReactionTimeline();
+            setOnlineConnectionStatus("保存済み");
+            save();
+          },
+          error=>{
+            setOnlineConnectionStatus("通信失敗");
+            alert("オンラインリアクションの同期に失敗しました：" + error.message);
+          }
+        );
+      }else{
+        onlineReactionsUnsubscribe=listenReactions(
+          lesson.onlineLessonId,
+          reactions=>{
+          const currentLesson=getCurrentLesson();
+          if(!currentLesson || currentLesson.onlineLessonId!==lesson.onlineLessonId)return;
+
+            quickReactions=reactions;
+            renderReactionTimeline();
+            setOnlineConnectionStatus("保存済み");
+            save();
+          },
+          error=>{
+            setOnlineConnectionStatus("通信失敗");
+            alert("オンラインリアクションの同期に失敗しました：" + error.message);
+          }
+        );
+      }
+    }
+  }
+
+  inputFocusResumeCommentAfter=null;
+  inputFocusResumeReactionAfter=null;
+}
+
+function startOnlineCommentSyncIfNeeded(){
+  stopOnlineCommentSync();
+
+  const lesson=getCurrentLesson();
+  if(!lesson || !lesson.onlineEnabled || !lesson.onlineLessonId)return;
+
+  setOnlineStatusPanelVisible(true);
+  setOnlineConnectionStatus("接続中");
+
+  onlineParticipantDocId=getOnlineParticipantDocId(lesson);
+  window.onlineParticipantDocIdForBeforeUnload=onlineParticipantDocId;
+  window.currentLessonForBeforeUnload={onlineLessonId:lesson.onlineLessonId};
+  const participantName=lesson.onlineParticipantName||document.getElementById("username").value||"名前なし";
+  const onlineUserRole=getOnlineUserRole(lesson);
+  const onlineParticipantRole=onlineUserRole==="作成者" ? "creator" : "participant";
+  setOnlineUserRole(onlineUserRole);
+
+  if(window.registerOnlineParticipantToFirebase){
+    window.registerOnlineParticipantToFirebase(lesson.onlineLessonId, onlineParticipantDocId, {
+      name:participantName,
+      role:onlineParticipantRole
+    }).then(()=>{
+      setOnlineConnectionStatus("保存済み");
+    }).catch(error=>{
+      setOnlineConnectionStatus("通信失敗");
+      alert("参加者情報の登録に失敗しました：" + error.message);
+    });
+    startOnlineParticipantHeartbeat(lesson, participantName, onlineParticipantRole);
+  }
+
+  if(window.listenOnlineParticipantsFromFirebase){
+    onlineParticipantsUnsubscribe=window.listenOnlineParticipantsFromFirebase(
+      lesson.onlineLessonId,
+      participants=>{
+        const currentLesson=getCurrentLesson();
+        if(!currentLesson || currentLesson.onlineLessonId!==lesson.onlineLessonId)return;
+
+        const visibleParticipants=getVisibleOnlineParticipants(participants);
+        currentLesson.participants=visibleParticipants;
+        renderOnlineParticipants(visibleParticipants);
+        setOnlineConnectionStatus("保存済み");
+        save();
+      },
+      error=>{
+        setOnlineConnectionStatus("通信失敗");
+        alert("参加者一覧の同期に失敗しました：" + error.message);
+      }
+    );
+  }
+
+  if(window.listenOnlineTagSettingsFromFirebase){
+    onlineTagSettingsUnsubscribe=window.listenOnlineTagSettingsFromFirebase(
+      lesson.onlineLessonId,
+      settings=>{
+        const currentLesson=getCurrentLesson();
+        if(!currentLesson || currentLesson.onlineLessonId!==lesson.onlineLessonId)return;
+
+        currentLesson.tagSettings=normalizeTagSettings(settings);
+        tagSettings=currentLesson.tagSettings;
+        renderTagOptions();
+        renderTagSettingsEditor();
+        render();
+        save();
+      },
+      error=>{
+        setOnlineConnectionStatus("通信失敗");
+        alert("オンライン観点タグ設定の同期に失敗しました：" + error.message);
+      }
+    );
+  }
+
+  resumeOnlineCommentAndReactionListenersIfNeeded();
+
+  if(window.listenOnlinePlanFromFirebase){
+    onlinePlanUnsubscribe=window.listenOnlinePlanFromFirebase(
+      lesson.onlineLessonId,
+      plan=>{
+        const currentLesson=getCurrentLesson();
+        if(!currentLesson || currentLesson.onlineLessonId!==lesson.onlineLessonId)return;
+
+        currentLesson.plan=plan||"";
+        const planEditor=document.getElementById("planEditor");
+        if(planEditor && planEditor.innerHTML!==(plan||"")){
+          planEditor.innerHTML=plan||"";
+        }
+        save();
+      },
+      error=>{
+        setOnlineConnectionStatus("通信失敗");
+        alert("オンライン指導案の同期に失敗しました：" + error.message);
+      }
+    );
+  }
+
+  if(window.listenOnlineVideoInfoFromFirebase){
+    onlineVideoInfoUnsubscribe=window.listenOnlineVideoInfoFromFirebase(
+      lesson.onlineLessonId,
+      videoInfo=>{
+        const currentLesson=getCurrentLesson();
+        if(!currentLesson || currentLesson.onlineLessonId!==lesson.onlineLessonId)return;
+
+        currentLesson.videoLink=videoInfo.videoLink||"";
+        currentLesson.videoStartTime=videoInfo.videoStartTime||"";
+
+        const videoLinkInput=document.getElementById("videoLinkInput");
+        const videoStartTimeInput=document.getElementById("videoStartTime");
+        if(videoLinkInput && videoLinkInput.value!==(videoInfo.videoLink||"")){
+          videoLinkInput.value=videoInfo.videoLink||"";
+        }
+        if(videoStartTimeInput && videoStartTimeInput.value!==(videoInfo.videoStartTime||"")){
+          videoStartTimeInput.value=videoInfo.videoStartTime||"";
+        }
+        updateVideoLinkDisplay();
+        render();
+        renderReactionTimeline();
+        save();
+      },
+      error=>{
+        setOnlineConnectionStatus("通信失敗");
+        alert("オンライン動画情報の同期に失敗しました：" + error.message);
+      }
+    );
+  }
+}
+
+function saveOnlinePlanIfNeeded(){
+  const lesson=getCurrentLesson();
+  if(!lesson || !lesson.onlineEnabled || !lesson.onlineLessonId)return;
+  if(!window.updateOnlinePlanToFirebase)return;
+
+  const plan=document.getElementById("planEditor").innerHTML;
+
+  if(onlinePlanSaveTimer){
+    clearTimeout(onlinePlanSaveTimer);
+  }
+
+  onlinePlanSaveTimer=setTimeout(async ()=>{
+    try{
+      await window.updateOnlinePlanToFirebase(lesson.onlineLessonId, plan);
+    }catch(error){
+      alert("オンライン指導案の保存に失敗しました：" + error.message);
+    }
+  }, 10000);
+}
+
+function saveOnlineVideoInfoIfNeeded(){
+  const lesson=getCurrentLesson();
+  if(!lesson || !lesson.onlineEnabled || !lesson.onlineLessonId)return;
+  if(!window.updateOnlineVideoInfoToFirebase)return;
+
+  const videoInfo={
+    videoLink:document.getElementById("videoLinkInput").value||"",
+    videoStartTime:document.getElementById("videoStartTime").value||""
+  };
+
+  if(onlineVideoInfoSaveTimer){
+    clearTimeout(onlineVideoInfoSaveTimer);
+  }
+
+  onlineVideoInfoSaveTimer=setTimeout(async ()=>{
+    try{
+      await window.updateOnlineVideoInfoToFirebase(lesson.onlineLessonId, videoInfo);
+    }catch(error){
+      alert("オンライン動画情報の保存に失敗しました：" + error.message);
+    }
+  }, 800);
+}
+
+/* ===== コメント追加 ===== */
+function updateInputStartStatus(){
+  const status=document.getElementById("inputStartStatus");
+  if(!status)return;
+
+  if(isLiveRecordedVideoRecordMode()){
+    status.textContent="動画時間追記：現在の動画時刻 " + format(Number(video.currentTime)||0) + " に視聴後コメントとして追加します";
+    return;
+  }
+
+  if(inputStartVideoTime===null && !inputStartRealTime){
+    status.textContent="";
+    return;
+  }
+
+  if(isLiveLesson() && inputStartRealTime){
+    status.textContent="入力開始時刻：" + inputStartRealTime;
+  }else if(inputStartVideoTime!==null){
+    status.textContent="入力開始時刻：" + format(inputStartVideoTime);
+  }else{
+    status.textContent="";
+  }
+}
+
+function updateCommentReactionButtons(){
+  const buttons=[
+    {id:"inputReactionStar", value:"⭐"},
+    {id:"inputReactionHeart", value:"💗"},
+    {id:"inputReactionClover", value:"🍀"},
+    {id:"inputReactionSparkle", value:"✨"},
+    {id:"inputReactionThumb", value:"👍"},
+    {id:"inputReactionMuscle", value:"💪"}
+  ];
+
+  buttons.forEach(button=>{
+    const el=document.getElementById(button.id);
+    if(!el)return;
+    if(selectedCommentReaction===button.value){
+      el.classList.add("selected");
+    }else{
+      el.classList.remove("selected");
+    }
+  });
+}
+
+function selectCommentReaction(value){
+  if(selectedCommentReaction===value){
+    selectedCommentReaction="";
+  }else{
+    selectedCommentReaction=value;
+  }
+  updateCommentReactionButtons();
+}
+
+function changeLiveRecordedRecordMode(value){
+  liveRecordedCommentMode=value==="video" ? "video" : "real";
+  if(liveRecordedCommentMode==="video"){
+    inputStartVideoTime=null;
+    inputStartRealTime="";
+    inputStartRealTimestamp=0;
+  }
+  updateLiveRecordedRecordModeUI();
+  updateInputStartStatus();
+}
+
+function updateLiveRecordedRecordModeUI(){
+  const area=document.getElementById("liveRecordedRecordModeArea");
+  const startBtn=document.getElementById("commentStartBtn");
+  const phaseSelect=document.getElementById("commentPhase");
+  const show=!!isLiveRecordedLesson();
+  const videoMode=show && liveRecordedCommentMode==="video";
+
+  if(area){
+    area.style.display=show ? "block" : "none";
+    area.querySelectorAll('input[name="liveRecordedRecordMode"]').forEach(input=>{
+      input.checked=input.value===liveRecordedCommentMode;
+    });
+  }
+  if(startBtn){
+    startBtn.style.display=videoMode ? "none" : "";
+  }
+  if(phaseSelect){
+    phaseSelect.disabled=videoMode;
+    if(videoMode){
+      phaseSelect.value="視聴後";
+    }
+  }
+}
+
+async function changeCommentReaction(i,value){
+  if(!memos[i])return;
+
+  if(memos[i].reaction===value){
+    memos[i].reaction="";
+  }else{
+    memos[i].reaction=value;
+  }
+  reactionMenuOpenIndex=null;
+
+  if(isOnlineLessonActive()){
+    const lesson=getCurrentLesson();
+    if(window.updateOnlineCommentReactionToFirebase && memos[i].id){
+      try{
+        await window.updateOnlineCommentReactionToFirebase(lesson.onlineLessonId, memos[i].id, memos[i].reaction||"");
+      }catch(error){
+        alert("オンラインコメントリアクションの保存に失敗しました：" + error.message);
+      }
+    }
+  }else{
+    save();
+    render();
+    renderReactionTimeline();
+  }
+}
+
+function commentReactionButtonsHTML(i,currentReaction){
+  const reactions=["⭐","💗","🍀","✨","👍","💪"];
+  const isOpen=reactionMenuOpenIndex===i;
+  let html=`
+    <span class="reactionMenu">
+      <button class="iconButton" onclick="toggleReactionMenu(${i})" title="リアクション操作" aria-label="リアクション操作">
+        <svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true">
+          <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
+          <circle cx="9" cy="10" r="1" fill="currentColor"/>
+          <circle cx="15" cy="10" r="1" fill="currentColor"/>
+          <path d="M8.5 14c1 1.5 2.2 2.2 3.5 2.2s2.5-.7 3.5-2.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <span class="reactionPicker reactionButtons"${isOpen ? "" : " hidden"}>`;
+
+  reactions.forEach(reaction=>{
+    const selected=currentReaction===reaction ? " selected" : "";
+    html+=`<button class="reactionButton${selected}" onclick="changeCommentReaction(${i},'${reaction}')">${reaction}</button>`;
+  });
+
+  html+=`</span></span>`;
+  return html;
+}
+
+function toggleReactionMenu(i){
+  reactionMenuOpenIndex=(reactionMenuOpenIndex===i) ? null : i;
+  render();
+}
+
+function toggleInputReactionMenu(){
+  inputReactionMenuOpen=!inputReactionMenuOpen;
+  const picker=document.getElementById("inputReactionPicker");
+  if(picker){
+    picker.hidden=!inputReactionMenuOpen;
+  }
+}
+
+function normalizeReaction(reaction){
+  if(reaction==="❤" || reaction==="♥"){
+    return "💗";
+  }
+  return reaction||"";
+}
+
+function getReactionVideoTime(item){
+  if(isLiveRecordedLesson() && item.realTimestamp){
+    const convertedTime=realTimestampToVideoTime(item.realTimestamp);
+    if(convertedTime!==null){
+      return convertedTime;
+    }
+  }
+  return Number(item.time)||0;
+}
+
+function getCommentSyncTime(m){
+  if(isLiveRecordedLesson() && m.realTimestamp){
+    const convertedTime=realTimestampToVideoTime(m.realTimestamp);
+    if(convertedTime!==null){
+      return convertedTime;
+    }
+  }
+  return Number(m.time)||0;
+}
+
+function toggleReactionTimelineSettings(){
+  const area=document.getElementById("reactionTimelineSettingsArea");
+  const btn=document.getElementById("reactionTimelineSettingsBtn");
+  if(!area || !btn)return;
+  const show=area.style.display==="none" || area.style.display==="";
+  area.style.display=show ? "block" : "none";
+  btn.textContent=show ? "リアクションバー ▲" : "リアクションバー ▼";
+}
+
+function changeReactionTimelineGrouping(){
+  const tagCheck=document.getElementById("reactionTimelineGroupByTag");
+  const commentCheck=document.getElementById("reactionTimelineGroupByComment");
+  reactionTimelineGroupByTag=!!(tagCheck && tagCheck.checked);
+  reactionTimelineGroupByComment=!!(commentCheck && commentCheck.checked);
+  renderReactionTimeline();
+}
+
+function getReactionTimelineTagLabel(tag){
+  const key=tag || "タグなし";
+  if(key==="タグなし")return key;
+  const setting=getCurrentTagSettings().find(t=>t.key===key);
+  return setting ? (setting.label||setting.key||key) : key;
+}
+
+function renderReactionTimeline(){
+  const area=document.getElementById("reactionTimeline");
+  if(!area)return;
+
+  area.innerHTML="";
+  area.style.height="";
+
+  const items=[];
+
+  memos.forEach(m=>{
+    const reaction=normalizeReaction(m.reaction||"");
+    if(reaction){
+      items.push({
+        reaction,
+        time:m.time,
+        realTimestamp:m.realTimestamp||0,
+        tag:m.tag||"",
+        hasComment:true
+      });
+    }
+  });
+
+  quickReactions.forEach((r,quickIndex)=>{
+    const reaction=normalizeReaction(r.reaction||"");
+    if(reaction){
+      items.push({
+        reaction,
+        time:r.time,
+        realTimestamp:r.realTimestamp||0,
+        tag:"",
+        hasComment:false,
+        quickIndex
+      });
+    }
+  });
+
+  if(items.length===0){
+    area.innerHTML=`<div class="reactionTimelineEmpty">リアクションはまだありません</div>`;
+    return;
+  }
+
+  const convertedItems=items.map(item=>({
+    reaction:item.reaction,
+    videoTime:getReactionVideoTime(item),
+    tag:item.tag||"",
+    hasComment:!!item.hasComment,
+    quickIndex:item.quickIndex
+  }));
+
+  let duration=video.duration;
+  if(!duration || isNaN(duration)){
+    duration=Math.max(...convertedItems.map(item=>item.videoTime), 1);
+  }
+
+  convertedItems.sort((a,b)=>a.videoTime-b.videoTime);
+
+  const laneKeys=[];
+  convertedItems.forEach(item=>{
+    const tagLabel=reactionTimelineGroupByTag ? getReactionTimelineTagLabel(item.tag) : "";
+    const commentLabel=reactionTimelineGroupByComment ? (item.hasComment ? "コメントあり" : "コメントなし") : "";
+    const laneKey=[tagLabel, commentLabel].filter(Boolean).join(" ");
+    const key=laneKey || "all";
+    item.laneKey=key;
+    item.laneLabel=laneKey;
+    if(!laneKeys.includes(key))laneKeys.push(key);
+  });
+
+  const laneCount=Math.max(1, laneKeys.length);
+  const laneHeight=18;
+  area.style.height=(laneCount*laneHeight + 12) + "px";
+
+  if(laneCount>1){
+    laneKeys.forEach((key,index)=>{
+      const laneItem=convertedItems.find(item=>item.laneKey===key);
+      const label=laneItem ? laneItem.laneLabel : "";
+      const laneLabel=document.createElement("span");
+      laneLabel.className="reactionTimelineLaneLabel";
+      laneLabel.textContent=label;
+      laneLabel.style.top=(4 + index*laneHeight) + "px";
+      area.appendChild(laneLabel);
+    });
+  }
+
+  convertedItems.forEach((item,index)=>{
+    const marker=document.createElement("span");
+    marker.className="reactionTimelineMarker";
+    marker.textContent=item.reaction;
+    const percent=Math.max(0, Math.min(100, (item.videoTime/duration)*100));
+    marker.style.left=percent + "%";
+    const laneIndex=laneKeys.indexOf(item.laneKey);
+    marker.style.top=(4 + Math.max(0,laneIndex)*laneHeight) + "px";
+    marker.title=format(item.videoTime) + " " + item.reaction;
+    if(!item.hasComment && item.quickIndex!==undefined){
+      marker.style.cursor="pointer";
+      marker.title+="\nクリックで削除";
+      marker.onclick=()=>deleteQuickReaction(item.quickIndex);
+    }
+    area.appendChild(marker);
+  });
+}
+
+function deleteQuickReaction(index){
+  if(index<0 || index>=quickReactions.length)return;
+  if(!confirm("このリアクションを削除しますか？"))return;
+  quickReactions.splice(index,1);
+  save();
+  renderReactionTimeline();
+}
+
+async function addQuickReaction(reaction){
+  const now=new Date();
+  const videoRecordMode=isLiveRecordedVideoRecordMode();
+  const liveMode=isLiveLesson() && !videoRecordMode;
+  const reactionTime=Number(video.currentTime)||0;
+  const reactionRealTime=liveMode ? formatRealTime(now) : "";
+  const reactionRealTimestamp=liveMode ? now.getTime() : 0;
+
+  const newReaction={
+    time:reactionTime,
+    realTime:reactionRealTime,
+    realTimestamp:reactionRealTimestamp,
+    reaction
+  };
+
+  if(isOnlineLessonActive()){
+    const lesson=getCurrentLesson();
+    if(!window.addOnlineQuickReactionToFirebase){
+      alert("オンラインリアクション保存処理の準備ができていません。ページを再読み込みしてください。");
+      return;
+    }
+
+    try{
+      await window.addOnlineQuickReactionToFirebase(lesson.onlineLessonId, {
+        ...newReaction,
+        onlineLessonId:lesson.onlineLessonId,
+        lessonCode:lesson.lessonCode||"",
+        participantName:lesson.onlineParticipantName||document.getElementById("username").value||"",
+        sortTimestamp:reactionRealTimestamp || reactionTime*1000,
+        createdAtText:new Date().toLocaleString()
+      });
+      setOnlineConnectionStatus("保存済み");
+    }catch(error){
+      alert("オンラインリアクションの保存に失敗しました：" + error.message);
+    }
+    return;
+  }
+
+  quickReactions.push(newReaction);
+
+  if(liveMode){
+    quickReactions.sort((a,b)=>(a.realTimestamp||0)-(b.realTimestamp||0));
+  }else{
+    quickReactions.sort((a,b)=>a.time-b.time);
+  }
+
+  save();
+  renderReactionTimeline();
+}
+
+function startCommentInput(){
+  if(isLiveRecordedVideoRecordMode()){
+    document.getElementById("newComment").focus();
+    updateInputStartStatus();
+    return;
+  }
+
+  const now=new Date();
+
+  inputStartVideoTime=video.currentTime;
+  if(isLiveLesson()){
+    inputStartRealTime=formatRealTime(now);
+    inputStartRealTimestamp=now.getTime();
+  }else{
+    inputStartRealTime="";
+    inputStartRealTimestamp=0;
+  }
+
+  updateInputStartStatus();
+  document.getElementById("newComment").focus();
+}
+
+async function addComment(){
+  const text=document.getElementById("newComment").value;
+  const user=document.getElementById("username").value||"";
+  const videoRecordMode=isLiveRecordedVideoRecordMode();
+  const phase=videoRecordMode ? "視聴後" : (document.getElementById("commentPhase").value||"");
+  const tag=document.getElementById("commentTag").value||"";
+  if(!text)return;
+
+  const now=new Date();
+  const liveMode=isLiveLesson() && !videoRecordMode;
+  const commentTime=videoRecordMode ? (Number(video.currentTime)||0) : (inputStartVideoTime!==null ? inputStartVideoTime : (Number(video.currentTime)||0));
+  const commentRealTime=videoRecordMode ? "" : (inputStartRealTime || (liveMode ? formatRealTime(now) : ""));
+  const commentRealTimestamp=videoRecordMode ? 0 : (inputStartRealTimestamp || (liveMode ? now.getTime() : 0));
+
+  const newMemo={
+    time:commentTime,
+    realTime:liveMode ? commentRealTime : "",
+    realTimestamp:liveMode ? commentRealTimestamp : 0,
+    text,
+    user,
+    phase,
+    tag,
+    reaction:selectedCommentReaction,
+    color:"",
+    replies:[]
+  };
+
+  if(isOnlineLessonActive()){
+    const lesson=getCurrentLesson();
+    if(!window.addOnlineCommentToFirebase){
+      alert("オンラインコメント保存処理の準備ができていません。ページを再読み込みしてください。");
+      return;
+    }
+
+    try{
+      setOnlineConnectionStatus("接続中");
+      const onlineCommentId=await window.addOnlineCommentToFirebase(lesson.onlineLessonId, {
+        ...newMemo,
+        onlineLessonId:lesson.onlineLessonId,
+        lessonCode:lesson.lessonCode||"",
+        participantName:lesson.onlineParticipantName||user||"",
+        sortTimestamp:getMemoSortValue(newMemo),
+        createdAtText:new Date().toLocaleString()
+      });
+      if(inputFocusMode && isInputFocusAvailable()){
+        newMemo.id=onlineCommentId||"";
+        newMemo.participantName=lesson.onlineParticipantName||user||"";
+        memos.push(newMemo);
+        sortMemosByTime();
+      }
+    }catch(error){
+      setOnlineConnectionStatus("通信失敗");
+      alert("オンラインコメントの保存に失敗しました：" + error.message);
+      return;
+    }
+  }else{
+    memos.push(newMemo);
+    sortMemosByTime();
+  }
+
+  inputStartVideoTime=null;
+  inputStartRealTime="";
+  inputStartRealTimestamp=0;
+  selectedCommentReaction="";
+  updateInputStartStatus();
+  updateCommentReactionButtons();
+  document.getElementById("newComment").value="";
+  resizeCommentTextarea();
+  save();
+  render();
+}
+
+function resizeCommentTextarea(){
+  const textarea=document.getElementById("newComment");
+  if(!textarea)return;
+  textarea.style.height="auto";
+  textarea.style.height=Math.min(textarea.scrollHeight,180)+"px";
+  textarea.style.overflowY=textarea.scrollHeight>180 ? "auto" : "hidden";
+}
+
+document.getElementById("newComment").addEventListener("input",resizeCommentTextarea);
+
+document.getElementById("newComment").addEventListener("keydown",e=>{
+  if(e.key==="Enter" && !e.shiftKey){
+    e.preventDefault();
+    addComment();
+  }
+});
+
+/* ===== メモ ===== */
+function addNote(){
+  notes.push({
+    title:"新しいメモ",
+    content:""
+  });
+
+  noteOpenStates.push(true);
+
+  save();
+  renderNotes();
+  renderTopNote();
+}
+
+function updateNoteTitle(i,value){
+  if(!notes[i])return;
+  notes[i].title=value;
+  save();
+  renderTopNote();
+}
+
+function updateNoteContent(i,value){
+  if(!notes[i])return;
+  notes[i].content=value;
+  save();
+  renderTopNote();
+}
+
+function updateTopNoteContent(value){
+  if(!notes[topNoteIndex])return;
+  notes[topNoteIndex].content=value;
+  save();
+  renderNotes();
+  renderTopNote();
+}
+
+function updateTopNoteContent2(value){
+  if(!notes[topNoteIndex2])return;
+  notes[topNoteIndex2].content=value;
+  save();
+  renderNotes();
+  renderTopNote();
+}
+
+function moveNoteUp(i){
+  if(i<=0)return;
+
+  const note=notes[i];
+  notes[i]=notes[i-1];
+  notes[i-1]=note;
+
+  const noteOpenState=noteOpenStates[i];
+  noteOpenStates[i]=noteOpenStates[i-1];
+  noteOpenStates[i-1]=noteOpenState;
+
+  if(topNoteIndex===i){
+    topNoteIndex=i-1;
+  }else if(topNoteIndex===i-1){
+    topNoteIndex=i;
+  }
+
+  if(topNoteIndex2===i){
+    topNoteIndex2=i-1;
+  }else if(topNoteIndex2===i-1){
+    topNoteIndex2=i;
+  }
+
+  save();
+  renderNotes();
+  renderTopNote();
+}
+
+function moveNoteDown(i){
+  if(i>=notes.length-1)return;
+
+  const note=notes[i];
+  notes[i]=notes[i+1];
+  notes[i+1]=note;
+
+  const noteOpenState=noteOpenStates[i];
+  noteOpenStates[i]=noteOpenStates[i+1];
+  noteOpenStates[i+1]=noteOpenState;
+
+  if(topNoteIndex===i){
+    topNoteIndex=i+1;
+  }else if(topNoteIndex===i+1){
+    topNoteIndex=i;
+  }
+
+  if(topNoteIndex2===i){
+    topNoteIndex2=i+1;
+  }else if(topNoteIndex2===i+1){
+    topNoteIndex2=i;
+  }
+
+  save();
+  renderNotes();
+  renderTopNote();
+}
+
+function deleteNote(i){
+  if(!confirm("このメモを削除します。よろしいですか？")){
+    return;
+  }
+
+  notes.splice(i,1);
+  noteOpenStates.splice(i,1);
+
+  if(topNoteIndex>=notes.length){
+    topNoteIndex=notes.length-1;
+  }
+  if(topNoteIndex<0){
+    topNoteIndex=0;
+  }
+
+  if(topNoteIndex2>=notes.length){
+    topNoteIndex2=notes.length-1;
+  }
+  if(topNoteIndex2<0){
+    topNoteIndex2=0;
+  }
+
+  save();
+  renderNotes();
+  renderTopNote();
+}
+
+function toggleNoteOpen(i){
+  noteOpenStates[i]=!noteOpenStates[i];
+  renderNotes();
+}
+
+function changeTopNote(value){
+  topNoteIndex=Number(value)||0;
+  save();
+  renderTopNote();
+}
+
+function changeTopNote2(value){
+  topNoteIndex2=Number(value)||0;
+  save();
+  renderTopNote();
+}
+
+function renderTopNote(){
+  const select=document.getElementById("topNoteSelect");
+  const select2=document.getElementById("topNoteSelect2");
+  const title=document.getElementById("topMemoTitle");
+  const title2=document.getElementById("topMemoTitle2");
+  const content=document.getElementById("topMemoContent");
+  const content2=document.getElementById("topMemoContent2");
+
+  select.innerHTML="";
+  select2.innerHTML="";
+
+  if(notes.length===0){
+    select.innerHTML=`<option value="">メモなし</option>`;
+    select2.innerHTML=`<option value="">メモなし</option>`;
+    title.textContent="";
+    title2.textContent="";
+    content.value="";
+    content2.value="";
+    return;
+  }
+
+  notes.forEach((note,i)=>{
+    const option=document.createElement("option");
+    option.value=i;
+    option.textContent=note.title || "新しいメモ";
+    select.appendChild(option);
+
+    const option2=document.createElement("option");
+    option2.value=i;
+    option2.textContent=note.title || "新しいメモ";
+    select2.appendChild(option2);
+  });
+
+  if(topNoteIndex>=notes.length){
+    topNoteIndex=notes.length-1;
+  }
+  if(topNoteIndex<0){
+    topNoteIndex=0;
+  }
+
+  if(topNoteIndex2>=notes.length){
+    topNoteIndex2=notes.length-1;
+  }
+  if(topNoteIndex2<0){
+    topNoteIndex2=0;
+  }
+
+  select.value=topNoteIndex;
+  select2.value=topNoteIndex2;
+  title.textContent="選択中：" + (notes[topNoteIndex].title || "新しいメモ");
+  title2.textContent="選択中：" + (notes[topNoteIndex2].title || "新しいメモ");
+  content.value=notes[topNoteIndex].content||"";
+  content2.value=notes[topNoteIndex2].content||"";
+}
+
+function renderNotes(){
+  const area=document.getElementById("notesArea");
+  area.innerHTML="";
+
+  notes.forEach((note,i)=>{
+    if(noteOpenStates[i]===undefined){
+      noteOpenStates[i]=true;
+    }
+
+    const div=document.createElement("div");
+    div.className="memoItem";
+
+    if(noteOpenStates[i]){
+      div.innerHTML=`
+        <button onclick="toggleNoteOpen(${i})">閉じる</button>
+        <input class="memoTitle" value="${escapeHTML(note.title||"")}" oninput="updateNoteTitle(${i},this.value)">
+        <textarea class="memoContent" oninput="updateNoteContent(${i},this.value)">${escapeHTML(note.content||"")}</textarea>
+        <div class="memoButtons">
+          <button onclick="moveNoteUp(${i})">上へ</button>
+          <button onclick="moveNoteDown(${i})">下へ</button>
+          <button onclick="deleteNote(${i})">削除</button>
+        </div>
+      `;
+    }else{
+      div.innerHTML=`
+        <button onclick="toggleNoteOpen(${i})">開く</button>
+        <input class="memoTitle" value="${escapeHTML(note.title||"")}" oninput="updateNoteTitle(${i},this.value)">
+      `;
+    }
+
+    area.appendChild(div);
+  });
+}
+
+/* ===== ユーザー絞り込み ===== */
+function updateUserFilter(){
+  const userFilter=document.getElementById("userFilter");
+  if(!userFilter)return;
+  renderUserFilterCheckboxes("userFilter");
+}
+
+function updateUserFilter2(){
+  const userFilter=document.getElementById("userFilter2");
+  if(!userFilter)return;
+  renderUserFilterCheckboxes("userFilter2");
+}
+
+function groupUsersByTag(){
+  const groups=new Map();
+
+  memos.forEach(m=>{
+    const user=(m.user||"").trim();
+    if(!user)return;
+    const tag=m.tag || "__none__";
+    if(!groups.has(tag)){
+      groups.set(tag,new Set());
+    }
+    groups.get(tag).add(user);
+  });
+
+  return groups;
+}
+
+function getUserFilterSortMode(filterId){
+  return filterId==="userFilter2" ? userFilterSortMode2 : userFilterSortMode;
+}
+
+function changeUserFilterSortMode(filterId, value){
+  if(filterId==="userFilter2"){
+    userFilterSortMode2=value==="name" ? "name" : "count";
+  }else{
+    userFilterSortMode=value==="name" ? "name" : "count";
+  }
+  render();
+}
+
+function getUserCommentCountByTag(){
+  const counts=new Map();
+  memos.forEach(m=>{
+    const user=(m.user||"").trim();
+    if(!user)return;
+    const tag=m.tag || "__none__";
+    const key=tag + "||" + user;
+    counts.set(key, (counts.get(key)||0)+1);
+  });
+  return counts;
+}
+
+function sortUsersForFilter(users, tagKey, counts, mode){
+  const list=[...users];
+  if(mode==="name"){
+    return list.sort((a,b)=>a.localeCompare(b,"ja",{numeric:true}));
+  }
+  return list.sort((a,b)=>{
+    const countA=counts.get(tagKey + "||" + a)||0;
+    const countB=counts.get(tagKey + "||" + b)||0;
+    if(countA!==countB)return countB-countA;
+    return a.localeCompare(b,"ja",{numeric:true});
+  });
+}
+
+function renderUserFilterCheckboxes(filterId){
+  const area=document.getElementById(filterId);
+  if(!area)return;
+
+  const selectedUsers=getSelectedUserFilters(filterId);
+  const groups=groupUsersByTag();
+  const userCounts=getUserCommentCountByTag();
+  const sortMode=getUserFilterSortMode(filterId);
+  const tags=getCurrentTagSettings();
+  const orderedKeys=[
+    ...tags.map(tag=>tag.key).filter(key=>groups.has(key)),
+    ...Array.from(groups.keys()).filter(key=>key!=="__none__" && !tags.some(tag=>tag.key===key)),
+    ...(groups.has("__none__") ? ["__none__"] : [])
+  ];
+
+  area.innerHTML="";
+
+  const sortArea=document.createElement("div");
+  sortArea.className="userFilterSortArea";
+  sortArea.innerHTML=`
+    <span>並び順：</span>
+    <label><input type="radio" name="${filterId}SortMode" value="count" ${sortMode==="count" ? "checked" : ""} onchange="changeUserFilterSortMode('${filterId}',this.value)">コメント数順</label>
+    <label><input type="radio" name="${filterId}SortMode" value="name" ${sortMode==="name" ? "checked" : ""} onchange="changeUserFilterSortMode('${filterId}',this.value)">名前順</label>
+  `;
+  area.appendChild(sortArea);
+
+  if(orderedKeys.length===0){
+    const empty=document.createElement("div");
+    empty.textContent="ユーザーなし";
+    area.appendChild(empty);
+    return;
+  }
+
+  orderedKeys.forEach(tagKey=>{
+    const users=sortUsersForFilter(Array.from(groups.get(tagKey)||[]), tagKey, userCounts, sortMode);
+    if(users.length===0)return;
+
+    const group=document.createElement("div");
+    group.className="userFilterGroup";
+
+    const title=document.createElement("div");
+    title.className="userFilterGroupTitle";
+    title.textContent=tagKey==="__none__" ? "観点なし" : getTagDisplayName(tagKey);
+    group.appendChild(title);
+
+    users.forEach(user=>{
+      const label=document.createElement("label");
+      const input=document.createElement("input");
+      input.type="checkbox";
+      input.value=user;
+      input.checked=selectedUsers.includes(user);
+      input.onchange=()=>changeUserFilterSelection(filterId, user, input.checked);
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(`${user}（${userCounts.get(tagKey + "||" + user)||0}）`));
+      group.appendChild(label);
+    });
+
+    area.appendChild(group);
+  });
+}
+
+/* ===== ユーザー別集計 ===== */
+function updateUserSummary(){
+  const summary=document.getElementById("userSummary");
+  const counts={};
+
+  memos.forEach(m=>{
+    const user=m.user || "ユーザー名なし";
+    counts[user]=(counts[user]||0)+1;
+  });
+
+  let html="<b>ユーザー別コメント数</b><br>";
+
+  const users=Object.keys(counts);
+  if(users.length===0){
+    html+="コメントなし";
+  }else{
+    users.forEach(user=>{
+      html+=`${user}: ${counts[user]}件<br>`;
+    });
+  }
+
+  summary.innerHTML=html;
+}
+
+/* ===== 協議区分別集計 ===== */
+function updatePhaseSummary(){
+  const summary=document.getElementById("phaseSummary");
+  const counts={
+    "協議前":0,
+    "協議後":0,
+    "協議区分なし":0
+  };
+
+  memos.forEach(m=>{
+    if(m.phase==="協議前"){
+      counts["協議前"]++;
+    }else if(m.phase==="協議後"){
+      counts["協議後"]++;
+    }else{
+      counts["協議区分なし"]++;
+    }
+  });
+
+  let html="<b>協議区分別コメント数</b><br>";
+  html+=`協議前: ${counts["協議前"]}件<br>`;
+  html+=`協議後: ${counts["協議後"]}件<br>`;
+  html+=`協議区分なし: ${counts["協議区分なし"]}件`;
+
+  summary.innerHTML=html;
+}
+
+/* ===== ユーザー×タグ集計 ===== */
+function updateUserTagSummary(){
+  const summary=document.getElementById("userTagSummary");
+  const tags=getCurrentTagSettings().map(tag=>tag.key).concat(["分類なし"]);
+  const counts={};
+
+  memos.forEach(m=>{
+    const user=m.user || "ユーザー名なし";
+    const tag=m.tag || "分類なし";
+
+    if(!counts[user]){
+      counts[user]={};
+      tags.forEach(t=>{
+        counts[user][t]=0;
+      });
+    }
+
+    if(counts[user][tag]===undefined){
+      counts[user][tag]=0;
+    }
+
+    counts[user][tag]++;
+  });
+
+  const users=Object.keys(counts);
+
+  summary.innerHTML=createCountTable("ユーザー×タグ分析", "ユーザー", users, tags, counts);
+}
+
+/* ===== ユーザー×協議区分集計 ===== */
+function updateUserPhaseSummary(){
+  const summary=document.getElementById("userPhaseSummary");
+  const phases=["協議前","協議後","協議区分なし"];
+  const counts={};
+
+  memos.forEach(m=>{
+    const user=m.user || "ユーザー名なし";
+    const phase=m.phase || "協議区分なし";
+
+    if(!counts[user]){
+      counts[user]={};
+      phases.forEach(p=>{
+        counts[user][p]=0;
+      });
+    }
+
+    if(counts[user][phase]===undefined){
+      counts[user][phase]=0;
+    }
+
+    counts[user][phase]++;
+  });
+
+  const users=Object.keys(counts);
+
+  summary.innerHTML=createCountTable("ユーザー×協議区分分析", "ユーザー", users, phases, counts);
+}
+
+/* ===== 描画 ===== */
+function render(){
+  const area=document.getElementById("comments");
+  area.innerHTML="";
+
+  const area2=document.getElementById("comments2");
+  if(area2){
+    area2.innerHTML="";
+  }
+
+  updateUserFilter();
+  updateUserFilter2();
+  updateUserSummary();
+  updatePhaseSummary();
+  updateUserTagSummary();
+  updateUserPhaseSummary();
+  updateLiveRecordedRecordModeUI();
+  updateInputStartStatus();
+  sortMemosByTime();
+
+  renderCommentsToArea("comments", "phaseFilter", "tagFilter", "userFilter", "commentSearch", false);
+  renderCommentsToArea("comments2", "phaseFilter2", "tagFilter2", "userFilter2", "commentSearch2", false);
+
+  renderReactionTimeline();
+}
+
+function renderCommentCard(m,i,options){
+  const showOperations=!!(options&&options.showOperations);
+  const areaId=(options&&options.areaId)||"";
+  const inputSuffix=areaId==="comments2" ? "2_" : "";
+  const editInputId=`editInput${inputSuffix}${i}`;
+  const replyBoxId=`replyBox${inputSuffix}${i}`;
+  const replyIcon=`<svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true">
+    <path d="M10 7l-5 5 5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M6 12h9c3 0 5 2 5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </svg>`;
+  const replyButtonHTML=areaId==="comments2" ? `<button class="iconButton" onclick="reply(${i},'${replyBoxId}')" title="返信" aria-label="返信">${replyIcon}</button>` : `<button class="iconButton" onclick="reply(${i})" title="返信" aria-label="返信">${replyIcon}</button>`;
+  const currentColor=["color-red","color-blue","color-green"].includes(m.color) ? m.color : "color-white";
+  const div=document.createElement("div");
+  div.className="comment";
+  if(options&&options.comparisonViewMode)div.classList.add("comparisonViewComment");
+  div.dataset.memoIndex=String(i);
+  if(currentColor!=="color-white") div.classList.add(currentColor);
+
+  let replies="";
+  (m.replies||[]).forEach((r,j)=>{
+    replies+=`
+    <div class="reply">
+      <b>${escapeHTML(r.user||"")}</b>${r.user?"：":""}${escapeHTML(r.text||"")}
+      ${showOperations ? `<button class="iconButton" onclick="delReply(${i},${j})" title="返信を削除" aria-label="返信を削除">
+        <svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true">
+          <path d="M6 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M9 8V6h6v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M8 8l1 11h6l1-11" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+      </button>` : ""}
+    </div>`;
+  });
+
+  let mainText="";
+  if(showOperations && editingIndex===i){
+    mainText=`<input id="${editInputId}" value="${escapeHTML(m.text||"")}">`;
+  }else{
+    mainText=`${escapeHTML(m.text||"")}`;
+  }
+
+  const reactionDisplay=normalizeReaction(m.reaction) ? `<span class="reactionDisplay">${escapeHTML(normalizeReaction(m.reaction))}</span>` : "";
+  const operationHTML=showOperations ? `
+  <button class="iconButton" onclick="startEdit(${i})" title="編集" aria-label="編集">
+    <svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true">
+      <path d="M5 19l4-1 9-9-3-3-9 9-1 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M14 6l3 3" stroke="currentColor" stroke-width="2"/>
+    </svg>
+  </button>
+  ${replyButtonHTML}
+  ${getDeleteButtonHTML(i,m)}
+
+  <span class="colorPickerCompact" title="色変更" aria-label="色変更">
+    <svg viewBox="0 0 24 24" class="miniIcon" aria-hidden="true">
+      <path d="M12 4a8 8 0 0 0 0 16h2c1.5 0 2-1.5 1-2.5-.7-.7-.2-1.5.9-1.5H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="8.5" cy="10" r="1" fill="currentColor"/>
+      <circle cx="11.5" cy="8" r="1" fill="currentColor"/>
+      <circle cx="14.5" cy="10" r="1" fill="currentColor"/>
+    </svg>
+    <span class="colorDot ${currentColor}" aria-hidden="true"></span>
+    <select onchange="changeColor(${i},this.value)" title="色変更" aria-label="色変更">
+      <option value="color-white"${currentColor==="color-white" ? " selected" : ""}>白</option>
+      <option value="color-red"${currentColor==="color-red" ? " selected" : ""}>赤</option>
+      <option value="color-blue"${currentColor==="color-blue" ? " selected" : ""}>青</option>
+      <option value="color-green"${currentColor==="color-green" ? " selected" : ""}>緑</option>
+    </select>
+  </span>
+
+  ${commentReactionButtonsHTML(i,normalizeReaction(m.reaction)||"")}` : "";
+
+  div.innerHTML=`
+  <b>${escapeHTML(m.user||"")}</b>${m.user?"：":""}
+  <span onclick="jumpMemo(${i})" style="color:blue;cursor:pointer;">
+    ${displayMemoTime(m)}
+  </span>
+  <span class="tagLabel">${m.phase ? "【" + m.phase + "】" : ""}</span>
+  <span class="tagLabel">${m.tag ? "【" + escapeHTML(getTagDisplayName(m.tag)) + "】" : ""}</span>
+  ${reactionDisplay}
+  ${mainText}<br>
+
+  ${operationHTML}
+
+  ${replies}
+  ${showOperations ? `<div id="${replyBoxId}"></div>` : ""}
+  `;
+
+  return div;
+}
+
+function getSelectedPhaseFilters(phaseFilterId){
+  const filterArea=document.getElementById(phaseFilterId);
+  if(!filterArea)return [];
+  return Array.from(filterArea.querySelectorAll('input[type="checkbox"]:checked')).map(input=>input.value);
+}
+
+function getSelectedTagFilters(tagFilterId){
+  const filterArea=document.getElementById(tagFilterId);
+  if(!filterArea)return [];
+  return Array.from(filterArea.querySelectorAll('input[type="checkbox"]:checked')).map(input=>input.value);
+}
+
+function getSelectedUserFilters(userFilterId){
+  const filterArea=document.getElementById(userFilterId);
+  if(!filterArea)return [];
+  return [...new Set(Array.from(filterArea.querySelectorAll('input[type="checkbox"]:checked')).map(input=>input.value))];
+}
+
+function syncUserFilterCheckboxes(userFilterId, user, checked){
+  const filterArea=document.getElementById(userFilterId);
+  if(!filterArea)return;
+  filterArea.querySelectorAll('input[type="checkbox"]').forEach(input=>{
+    if(input.value===user){
+      input.checked=checked;
+    }
+  });
+}
+
+function changeUserFilterSelection(userFilterId, user, checked){
+  syncUserFilterCheckboxes(userFilterId, user, checked);
+  render();
+}
+
+function matchesSelectedPhases(m, selectedPhases){
+  if(!selectedPhases || selectedPhases.length===0)return true;
+  const phase=m.phase || "区分なし";
+  return selectedPhases.includes(phase);
+}
+
+function matchesSelectedTags(m, selectedTags){
+  if(!selectedTags || selectedTags.length===0)return true;
+  const tag=m.tag || "__none__";
+  return selectedTags.includes(tag);
+}
+
+function matchesSelectedUsers(m, selectedUsers){
+  if(!selectedUsers || selectedUsers.length===0)return true;
+  return selectedUsers.includes(m.user || "");
+}
+
+function getFilterConditionLabels(phaseFilterId, tagFilterId, userFilterId, commentSearchId){
+  const labels=[];
+  getSelectedPhaseFilters(phaseFilterId).forEach(value=>labels.push(value));
+  getSelectedTagFilters(tagFilterId).forEach(value=>{
+    labels.push(value==="__none__" ? "観点なし" : getTagDisplayName(value));
+  });
+  getSelectedUserFilters(userFilterId).forEach(value=>labels.push(value));
+
+  const search=document.getElementById(commentSearchId);
+  const searchText=search ? search.value.trim() : "";
+  if(searchText){
+    labels.push("検索: " + searchText);
+  }
+
+  return labels;
+}
+
+function updateFilterSummary(countId, conditionId, visibleCount, totalCount, labels){
+  const countArea=document.getElementById(countId);
+  const conditionArea=document.getElementById(conditionId);
+
+  if(countArea){
+    countArea.textContent=`表示：${visibleCount} / ${totalCount}件`;
+  }
+  if(conditionArea){
+    conditionArea.textContent="選択中：" + (labels.length ? labels.join(", ") : "なし");
+  }
+}
+
+function clearFilterSet(phaseFilterId, tagFilterId, userFilterId, commentSearchId){
+  [phaseFilterId, tagFilterId, userFilterId].forEach(id=>{
+    const area=document.getElementById(id);
+    if(!area)return;
+    area.querySelectorAll('input[type="checkbox"]').forEach(input=>{
+      input.checked=false;
+    });
+  });
+
+  const search=document.getElementById(commentSearchId);
+  if(search){
+    search.value="";
+  }
+
+  render();
+}
+
+function clearFilters(){
+  clearFilterSet("phaseFilter", "tagFilter", "userFilter", "commentSearch");
+}
+
+function clearFilters2(){
+  clearFilterSet("phaseFilter2", "tagFilter2", "userFilter2", "commentSearch2");
+}
+
+function renderCommentsToArea(areaId, phaseFilterId, tagFilterId, userFilterId, commentSearchId, readOnly){
+  const area=document.getElementById(areaId);
+  if(!area)return;
+
+  const selectedPhases=getSelectedPhaseFilters(phaseFilterId);
+  const selectedTags=getSelectedTagFilters(tagFilterId);
+  const selectedUsers=getSelectedUserFilters(userFilterId);
+  const commentSearch=document.getElementById(commentSearchId).value.trim();
+  const focusOwnOnly=inputFocusMode && areaId==="comments" && isInputFocusAvailable();
+  let visibleCount=0;
+  const totalCount=focusOwnOnly ? memos.filter(m=>isOwnMemo(m)).length : memos.length;
+
+  memos.forEach((m,i)=>{
+    if(!matchesSelectedPhases(m, selectedPhases)) return;
+    if(!matchesSelectedTags(m, selectedTags)) return;
+    if(!matchesSelectedUsers(m, selectedUsers)) return;
+    if(commentSearch && !m.text.includes(commentSearch)) return;
+    if(focusOwnOnly && !isOwnMemo(m)) return;
+
+    visibleCount++;
+    const showOperations=!readOnly && !comparisonViewMode;
+    const div=renderCommentCard(m,i,{showOperations,areaId,comparisonViewMode});
+    area.appendChild(div);
+
+    if(showOperations && editingIndex===i){
+      const editInput=div.querySelector('input[id^="editInput"]');
+      if(editInput)editInput.addEventListener("keypress",e=>{
+        if(e.key==="Enter"){
+          memos[i].text=e.target.value;
+          editingIndex=null;
+          save();
+          render();
+        }
+      });
+    }
+  });
+
+  const labels=getFilterConditionLabels(phaseFilterId, tagFilterId, userFilterId, commentSearchId);
+  if(areaId==="comments2"){
+    updateFilterSummary("filterCountSummary2", "filterConditionSummary2", visibleCount, totalCount, labels);
+  }else{
+    updateFilterSummary("filterCountSummary", "filterConditionSummary", visibleCount, totalCount, labels);
+  }
+}
+
+/* ===== 編集 ===== */
+function startEdit(i){
+  editingIndex=(editingIndex===i) ? null : i;
+  render();
+}
+
+/* ===== 色 ===== */
+function changeColor(i,c){
+  memos[i].color=(c && c!=="color-white") ? c : "";
+  save();
+  render();
+}
+
+/* ===== ハイライト＋スクロール ===== */
+function highlight(){
+  let closest=-1, min=Infinity;
+  const syncRange=Number(syncRangeSeconds)||0;
+
+  memos.forEach((m,i)=>{
+    let d=Math.abs(video.currentTime-getCommentSyncTime(m));
+    if(d<min){min=d;closest=i;}
+  });
+
+  document.querySelectorAll(".comment").forEach(el=>{
+    const memoIndex=Number(el.dataset.memoIndex);
+    if(syncRange>0 && memoIndex===closest && min<=syncRange){
+      el.classList.add("highlight");
+    }else{
+      el.classList.remove("highlight");
+    }
+  });
+
+  if(syncRange<=0 || min>syncRange)return;
+
+  const mainHighlighted=document.querySelector('#comments .comment.highlight');
+  if(mainHighlighted && autoScroll1 && lastIndex1!==closest){
+    mainHighlighted.scrollIntoView({behavior:"smooth",block:"center"});
+    lastIndex1=closest;
+  }
+
+  const compareHighlighted=document.querySelector('#comments2 .comment.highlight');
+  if(compareHighlighted && autoScroll2 && lastIndex2!==closest){
+    compareHighlighted.scrollIntoView({behavior:"smooth",block:"center"});
+    lastIndex2=closest;
+  }
+}
+
+/* ===== その他 ===== */
+function jump(t){
+  video.currentTime=t;
+  video.play();
+}
+
+function jumpMemo(i){
+  if(!memos[i])return;
+
+  if(isLiveRecordedLesson() && memos[i].realTimestamp){
+    const convertedTime=realTimestampToVideoTime(memos[i].realTimestamp);
+    if(convertedTime===null){
+      alert("動画視聴開始時刻を入力してください。");
+      return;
+    }
+    jump(convertedTime);
+    return;
+  }
+
+  jump(memos[i].time);
+}
+
+function reply(i,boxId){
+  const box=document.getElementById(boxId||("replyBox"+i));
+  if(!box)return;
+  const currentBoxId=boxId||("replyBox"+i);
+  if(openReplyBoxId===currentBoxId && box.innerHTML.trim()){
+    box.innerHTML="";
+    openReplyBoxId="";
+    return;
+  }
+  openReplyBoxId=currentBoxId;
+  const replyInputId=boxId ? ("r_"+boxId) : ("r"+i);
+  box.innerHTML=`<input id="${replyInputId}" placeholder="返信">`;
+
+  box.querySelector("input").addEventListener("keypress",e=>{
+    if(e.key==="Enter"){
+      const user=document.getElementById("username").value||"";
+      if(!Array.isArray(memos[i].replies))memos[i].replies=[];
+      memos[i].replies.push({user,text:e.target.value});
+      openReplyBoxId="";
+      save();
+      render();
+    }
+  });
+}
+
+async function del(i){
+  if(!memos[i])return;
+  if(!confirm("このコメントを削除しますか？"))return;
+
+  if(isOnlineLessonActive()){
+    const lesson=getCurrentLesson();
+
+    if(!canDeleteMemo(memos[i])){
+      alert("オンライン授業では、自分のコメントまたは作成者のみ削除できます。");
+      return;
+    }
+
+    if(!memos[i].id){
+      alert("オンラインコメントIDが見つからないため削除できません。");
+      return;
+    }
+
+    if(!window.deleteOnlineCommentFromFirebase){
+      alert("オンラインコメント削除処理の準備ができていません。ページを再読み込みしてください。");
+      return;
+    }
+
+    try{
+      setOnlineConnectionStatus("接続中");
+      await window.deleteOnlineCommentFromFirebase(lesson.onlineLessonId, memos[i].id);
+      setOnlineConnectionStatus("保存済み");
+    }catch(error){
+      setOnlineConnectionStatus("通信失敗");
+      alert("オンラインコメントの削除に失敗しました：" + error.message);
+    }
+    return;
+  }
+
+  memos.splice(i,1);
+  lastIndex1=-1;
+  lastIndex2=-1;
+  save();
+  render();
+}
+
+function delReply(i,j){
+  if(!confirm("この返信を削除しますか？"))return;
+  memos[i].replies.splice(j,1);
+  save();
+  render();
+}
+
+function toggleAutoScroll(){
+  autoScroll1=!autoScroll1;
+  lastIndex1=-1;
+  document.getElementById("autoScrollBtn").textContent=
+    "スクロール: " + (autoScroll1 ? "ON" : "OFF");
+}
+
+function toggleAutoScroll2(){
+  autoScroll2=!autoScroll2;
+  lastIndex2=-1;
+  document.getElementById("autoScrollBtn2").textContent=
+    "スクロール: " + (autoScroll2 ? "ON" : "OFF");
+}
+
+function changeSyncRange(value){
+  syncRangeSeconds=Number(value)||0;
+  lastIndex1=-1;
+  lastIndex2=-1;
+  highlight();
+}
+
+function toggleComparisonViewMode(){
+  comparisonViewMode=!comparisonViewMode;
+  document.getElementById("comparisonViewModeBtn").textContent=
+    "比較表示モード: " + (comparisonViewMode ? "ON" : "OFF");
+  render();
+}
+
+function toggleAnalysisDetails(){
+  const details=document.getElementById("analysisDetails");
+  const btn=document.getElementById("analysisToggleBtn");
+
+  if(details.style.display==="none" || details.style.display===""){
+    details.style.display="block";
+    btn.textContent="詳細分析: 表示";
+  }else{
+    details.style.display="none";
+    btn.textContent="詳細分析: 非表示";
+  }
+}
+
+function toggleDetailedOutputs(){
+  const area=document.getElementById("detailedOutputButtons");
+
+  if(area.style.display==="none" || area.style.display===""){
+    area.style.display="block";
+  }else{
+    area.style.display="none";
+  }
+}
+
+function toggleInputOutputMenu(){
+  const area=document.getElementById("inputOutputMenuContent");
+  const btn=document.getElementById("toggleInputOutputMenuBtn");
+  if(!area)return;
+
+  const open=area.style.display==="none" || area.style.display==="";
+  area.style.display=open ? "block" : "none";
+  if(btn){
+    btn.textContent=open ? "入力・出力 ▲" : "入力・出力 ▼";
+  }
+}
+
+function toggleCommonSettings(){
+  const area=document.getElementById("commonLessonSettingsArea");
+  const btn=document.getElementById("commonLessonSettingsLabel");
+  if(!area)return;
+
+  const open=area.style.display==="none" || area.style.display==="";
+  area.style.display=open ? "block" : "none";
+  if(btn){
+    btn.textContent=open ? "共通設定 ▲" : "共通設定 ▼";
+  }
+}
+
+function toggleFilterSection(sectionId){
+  const area=document.getElementById(sectionId);
+  const btn=document.querySelector(`[data-filter-section="${sectionId}"]`);
+  if(!area)return;
+
+  const open=area.style.display==="none" || area.style.display==="";
+  area.style.display=open ? (area.classList.contains("phaseFilterArea") ? "inline-flex" : "block") : "none";
+
+  if(btn){
+    const label=btn.getAttribute("data-label") || btn.textContent.replace(/[▶▼]/g,"").trim();
+    btn.textContent=label + (open ? " ▼" : " ▶");
+  }
+}
+
+function toggleFilterControls(){
+  const area=document.getElementById("filterControls");
+  const btn=document.getElementById("filterToggleBtn");
+
+  if(area.style.display==="none" || area.style.display===""){
+    area.style.display="block";
+    btn.textContent="絞り込み: 表示";
+  }else{
+    area.style.display="none";
+    btn.textContent="絞り込み";
+  }
+}
+
+function toggleFilterControls2(){
+  const area=document.getElementById("filterControls2");
+  const btn=document.getElementById("filterToggleBtn2");
+
+  if(area.style.display==="none" || area.style.display===""){
+    area.style.display="block";
+    btn.textContent="絞り込み: 表示";
+  }else{
+    area.style.display="none";
+    btn.textContent="絞り込み";
+  }
+}
+
+function updateInputFocusModeAvailability(){
+  const btn=document.getElementById("inputFocusModeBtn");
+  if(!btn)return;
+
+  btn.style.display="inline-block";
+  if(!isInputFocusAvailable()){
+    inputFocusMode=false;
+  }
+  applyInputFocusModeLayout();
+}
+
+function updateInputFocusModeButton(){
+  const btn=document.getElementById("inputFocusModeBtn");
+  if(btn){
+    if(isInputFocusAvailable()){
+      btn.textContent="入力集中: " + (inputFocusMode ? "ON" : "OFF");
+    }else{
+      btn.textContent="入力集中: OFF（生授業のみ）";
+    }
+  }
+}
+
+function toggleInputFocusMode(){
+  if(!isInputFocusAvailable()){
+    alert("入力集中モードは生授業観察モードでのみ使用できます。");
+    return;
+  }
+  const nextInputFocusMode=!inputFocusMode;
+  if(nextInputFocusMode){
+    captureInputFocusPreviousPanels();
+  }
+  inputFocusMode=nextInputFocusMode;
+  if(inputFocusMode){
+    inputFocusResumeCommentAfter=getMaxMemoSortTimestamp();
+    inputFocusResumeReactionAfter=getMaxReactionSortTimestamp();
+    stopOnlineCommentAndReactionListeners();
+  }else{
+    resumeOnlineCommentAndReactionListenersIfNeeded();
+  }
+  applyInputFocusModeLayout();
+  render();
+}
+
+function captureInputFocusPreviousPanels(){
+  const panelIds=["videoPanel","commentPanel","commentPanel2","planPanel","memoPanel","topMemoPanel","topMemoPanel2"];
+  const toggleIds=["videoToggle","commentToggle","commentToggle2","planToggle","memoToggle","topMemoToggle","topMemoToggle2"];
+  inputFocusPreviousPanels={
+    panels:{},
+    toggles:{}
+  };
+  panelIds.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){
+      inputFocusPreviousPanels.panels[id]={
+        display:el.style.display,
+        visible:window.getComputedStyle(el).display!=="none"
+      };
+    }
+  });
+  toggleIds.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){
+      inputFocusPreviousPanels.toggles[id]=el.checked;
+    }
+  });
+}
+
+function restoreInputFocusPreviousPanels(){
+  if(!inputFocusPreviousPanels)return false;
+  Object.keys(inputFocusPreviousPanels.panels).forEach(id=>{
+    const el=document.getElementById(id);
+    const state=inputFocusPreviousPanels.panels[id];
+    if(el&&state){
+      if(state.visible){
+        el.style.display=state.display&&state.display!=="none" ? state.display : "block";
+      }else{
+        el.style.display="none";
+      }
+    }
+  });
+  Object.keys(inputFocusPreviousPanels.toggles).forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){
+      el.checked=!!inputFocusPreviousPanels.toggles[id];
+    }
+  });
+  inputFocusPreviousPanels=null;
+  return true;
+}
+
+function applyInputFocusModeLayout(){
+  updateInputFocusModeButton();
+
+  const notice=document.getElementById("inputFocusNotice");
+  const exitBtn=document.getElementById("inputFocusExitBtn");
+  const container=document.querySelector(".container");
+  if(exitBtn){
+    exitBtn.style.display=(inputFocusMode && isInputFocusAvailable()) ? "inline-block" : "none";
+  }
+  if(container){
+    if(inputFocusMode && isInputFocusAvailable()){
+      container.classList.add("input-focus-mode");
+    }else{
+      container.classList.remove("input-focus-mode");
+    }
+  }
+  if(notice){
+    notice.style.display=(inputFocusMode && isInputFocusAvailable()) ? "block" : "none";
+  }
+
+  if(inputFocusMode && isInputFocusAvailable()){
+    stopOnlineCommentAndReactionListeners();
+    if(isOnlineLessonActive()){
+      setOnlineConnectionStatus("入力集中（他者受信停止中）");
+    }
+  }
+
+  if(!(inputFocusMode && isInputFocusAvailable())){
+    restoreInputFocusPreviousPanels();
+    return;
+  }
+
+  document.getElementById("videoPanel").style.display="none";
+  document.getElementById("commentPanel").style.display="block";
+  document.getElementById("commentPanel2").style.display="none";
+  document.getElementById("planPanel").style.display="none";
+  document.getElementById("topMemoPanel").style.display="none";
+  document.getElementById("topMemoPanel2").style.display="none";
+  document.getElementById("memoPanel").style.display="block";
+
+  document.getElementById("videoToggle").checked=false;
+  document.getElementById("commentToggle").checked=true;
+  document.getElementById("commentToggle2").checked=false;
+  document.getElementById("planToggle").checked=false;
+  document.getElementById("topMemoToggle").checked=false;
+  document.getElementById("topMemoToggle2").checked=false;
+  document.getElementById("memoToggle").checked=true;
+}
+
+function updateTimeDisplayModeButton(){
+  const btn=document.getElementById("timeDisplayModeBtn");
+  if(!btn)return;
+  btn.textContent="時刻表示: " + (timeDisplayMode==="real" ? "実時間" : "動画時間");
+}
+
+function toggleTimeDisplayMode(){
+  timeDisplayMode = timeDisplayMode==="real" ? "video" : "real";
+  updateTimeDisplayModeButton();
+  sortMemosByTime();
+  render();
+}
+
+function resetInitialPanels(){
+  inputFocusMode=false;
+  document.getElementById("videoPanel").style.display="block";
+  document.getElementById("commentPanel").style.display="block";
+  document.getElementById("commentPanel2").style.display="none";
+  document.getElementById("planPanel").style.display="none";
+  document.getElementById("topMemoPanel").style.display="none";
+  document.getElementById("topMemoPanel2").style.display="none";
+  document.getElementById("memoPanel").style.display="none";
+
+  document.getElementById("videoToggle").checked=true;
+  document.getElementById("commentToggle").checked=true;
+  document.getElementById("commentToggle2").checked=false;
+  document.getElementById("planToggle").checked=false;
+  document.getElementById("topMemoToggle").checked=false;
+  document.getElementById("topMemoToggle2").checked=false;
+  document.getElementById("memoToggle").checked=false;
+
+  document.getElementById("detailedOutputButtons").style.display="none";
+  const tagSettingsArea=document.getElementById("tagSettingsArea");
+  const tagSettingsToggleBtn=document.getElementById("tagSettingsToggleBtn");
+  if(tagSettingsArea){tagSettingsArea.style.display="none";}
+  if(tagSettingsToggleBtn){tagSettingsToggleBtn.textContent="観点タグ設定: 非表示";}
+  inputStartVideoTime=null;
+  inputStartRealTime="";
+  inputStartRealTimestamp=0;
+  liveRecordedCommentMode="real";
+  updateInputStartStatus();
+  timeDisplayMode="real";
+  updateTimeDisplayModeButton();
+}
+
+function applyPanelOrder(){
+  const parent=document.querySelector(".container");
+  panelOrder=normalizePanelOrder(panelOrder);
+  panelOrder.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){
+      parent.appendChild(el);
+    }
+  });
+}
+
+function savePanelOrder(){
+  const parent=document.querySelector(".container");
+  panelOrder=normalizePanelOrder(Array.from(parent.children).map(el=>el.id).filter(id=>DEFAULT_PANEL_ORDER.includes(id)));
+  save();
+}
+
+function movePanelUp(id){
+  const el=document.getElementById(id);
+  const parent=el.parentNode;
+  const previous=el.previousElementSibling;
+
+  if(!previous)return;
+  if(el.id==="memoPanel")return;
+
+  parent.insertBefore(el, previous);
+  savePanelOrder();
+}
+
+function movePanelDown(id){
+  const el=document.getElementById(id);
+  const parent=el.parentNode;
+  const next=el.nextElementSibling;
+
+  if(!next)return;
+  if(next.id==="memoPanel")return;
+  if(el.id==="memoPanel")return;
+
+  parent.insertBefore(next, el);
+  savePanelOrder();
+}
+
+/* ===== CSV ===== */
+function exportCSV(){
+  let csv="time,user,phase,tag,comment,color\n";
+  csv+=memoCSVRows(memos);
+  downloadCSV("data.csv", csv);
+}
+
+function exportLessonCSV(i){
+  const lesson=lessons[i];
+  if(!lesson)return;
+
+  let csv="time,user,phase,tag,comment,color\n";
+  csv+=memoCSVRows(lesson.memos||[]);
+  downloadCSV(lesson.name + ".csv", csv);
+}
+
+function exportAllLessonsCSV(){
+  let csv="lesson,time,user,phase,tag,comment,color\n";
+
+  lessons.forEach(lesson=>{
+    csv+=memoCSVRows(lesson.memos||[], lesson.name);
+  });
+
+  downloadCSV("all_lessons.csv", csv);
+}
+
+function exportUserSummaryCSV(){
+  let csv="user,count\n";
+  const counts={};
+
+  memos.forEach(m=>{
+    const user=m.user || "ユーザー名なし";
+    counts[user]=(counts[user]||0)+1;
+  });
+
+  Object.keys(counts).forEach(user=>{
+    csv+=`${csvEscape(user)},${counts[user]}\n`;
+  });
+
+  downloadCSV("user_summary.csv", csv);
+}
+
+function exportTagSummaryCSV(){
+  let csv="tag,count\n";
+  const counts={};
+
+  memos.forEach(m=>{
+    const tag=m.tag || "分類なし";
+    counts[tag]=(counts[tag]||0)+1;
+  });
+
+  Object.keys(counts).forEach(tag=>{
+    csv+=`${csvEscape(tag)},${counts[tag]}\n`;
+  });
+
+  downloadCSV("tag_summary.csv", csv);
+}
+
+function exportNotesCSV(){
+  let csv="memo_title,memo_content\n";
+
+  notes.forEach(note=>{
+    csv+=`${csvEscape(note.title||"")},${csvEscape(note.content||"")}\n`;
+  });
+
+  downloadCSV("notes.csv", csv);
+}
+
+function exportAnalysisSummaryCSV(){
+  let csv="section,item,count\n";
+  const userCounts={};
+  const phaseCounts={
+    "協議前":0,
+    "協議後":0,
+    "協議区分なし":0
+  };
+  const tagCounts={};
+
+  memos.forEach(m=>{
+    const user=m.user || "ユーザー名なし";
+    const tag=m.tag || "分類なし";
+
+    userCounts[user]=(userCounts[user]||0)+1;
+    tagCounts[tag]=(tagCounts[tag]||0)+1;
+
+    if(m.phase==="協議前"){
+      phaseCounts["協議前"]++;
+    }else if(m.phase==="協議後"){
+      phaseCounts["協議後"]++;
+    }else{
+      phaseCounts["協議区分なし"]++;
+    }
+  });
+
+  Object.keys(userCounts).forEach(user=>{
+    csv+=`ユーザー別コメント数,${csvEscape(user)},${userCounts[user]}\n`;
+  });
+
+  Object.keys(phaseCounts).forEach(phase=>{
+    csv+=`協議区分別コメント数,${csvEscape(phase)},${phaseCounts[phase]}\n`;
+  });
+
+  Object.keys(tagCounts).forEach(tag=>{
+    csv+=`タグ別コメント数,${csvEscape(tag)},${tagCounts[tag]}\n`;
+  });
+
+  downloadCSV("analysis_summary.csv", csv);
+}
+
+/* ===== オンライン授業退避・削除 ===== */
+async function exportOnlineLessonArchiveJSON(){
+  const lesson=getCurrentLesson();
+  const result=document.getElementById("onlineArchiveResult");
+
+  if(!lesson || !lesson.onlineEnabled || !lesson.onlineLessonId){
+    alert("オンライン授業を開いているときだけ使えます。");
+    return;
+  }
+
+  if(result){
+    result.textContent="オンライン授業データを取得中...";
+  }
+
+  try{
+    let archiveData=null;
+
+    if(window.fetchOnlineLessonArchiveFromFirebase){
+      archiveData=await window.fetchOnlineLessonArchiveFromFirebase(lesson.onlineLessonId);
+    }
+
+    if(!archiveData){
+      archiveData={
+        lessonInfo:{...lesson},
+        comments:memos||[],
+        quickReactions:quickReactions||[],
+        plan:lesson.plan||document.getElementById("planEditor").innerHTML||"",
+        videoLink:lesson.videoLink||"",
+        videoStartTime:lesson.videoStartTime||"",
+        participants:lesson.participants||[],
+        tagSettings:normalizeTagSettings(lesson.tagSettings)
+      };
+    }
+
+    const data={
+      appName:"授業分析アプリ",
+      version:"var4.7.5",
+      archiveType:"onlineLessonArchive",
+      exportedAt:new Date().toLocaleString(),
+      onlineLessonId:lesson.onlineLessonId||"",
+      lessonCode:lesson.lessonCode||"",
+      lessonName:lesson.name||"",
+      lessonInfo:archiveData.lessonInfo||{},
+      comments:archiveData.comments||[],
+      quickReactions:archiveData.quickReactions||[],
+      plan:archiveData.plan||"",
+      videoLink:archiveData.videoLink||"",
+      videoStartTime:archiveData.videoStartTime||"",
+      participants:archiveData.participants||[],
+      tagSettings:normalizeTagSettings(archiveData.tagSettings || (archiveData.lessonInfo&&archiveData.lessonInfo.tagSettings))
+    };
+
+    downloadJSON((lesson.name||"online_lesson") + "_online_archive.json", data);
+
+    if(result){
+      result.textContent="オンライン授業JSONを退避保存しました。削除する場合は、内容を確認してから削除ボタンを押してください。";
+    }
+  }catch(error){
+    if(result){
+      result.textContent="オンライン授業JSON退避に失敗しました：" + error.message;
+    }
+    alert("オンライン授業JSON退避に失敗しました：" + error.message);
+  }
+}
+
+async function deleteOnlineLessonAfterArchive(){
+  const lesson=getCurrentLesson();
+  const result=document.getElementById("onlineArchiveResult");
+
+  if(!lesson || !lesson.onlineEnabled || !lesson.onlineLessonId){
+    alert("オンライン授業を開いているときだけ使えます。");
+    return;
+  }
+
+  const info="授業名: " + (lesson.name||"") + "\n授業コード: " + (lesson.lessonCode||"") + "\nFirestore授業ID: " + (lesson.onlineLessonId||"");
+
+  if(!confirm("Firebase上のオンライン授業データを削除します。\n\n" + info + "\n\n先に『オンライン授業JSON退避』を実行して、JSONファイルを保存したことを確認してください。\n\n削除すると、他の参加者はこのオンライン授業にアクセスできなくなります。\n\n本当に削除しますか？")){
+    return;
+  }
+
+  const typed=prompt("誤削除防止のため、授業コードを入力してください。\n\n" + info);
+  if(typed!==(lesson.lessonCode||"")){
+    alert("授業コードが一致しないため、削除を中止しました。");
+    return;
+  }
+
+  if(!window.deleteOnlineLessonFromFirebase){
+    alert("Firebase削除処理の準備ができていません。ページを再読み込みしてください。");
+    return;
+  }
+
+  if(result){
+    result.textContent="Firebase上のオンライン授業データを削除中...";
+  }
+
+  try{
+    await window.deleteOnlineLessonFromFirebase(lesson.onlineLessonId, lesson.lessonCode||"");
+
+    stopOnlineCommentSync();
+    lesson.onlineDeleted=true;
+    lesson.onlineEnabled=false;
+    lesson.updatedAt=new Date().toLocaleString();
+    saveLessons();
+    renderLessons();
+
+    if(result){
+      result.textContent="Firebase上のオンライン授業データを削除しました。ローカルの授業データは残っています。";
+    }
+    alert("Firebase上のオンライン授業データを削除しました。\nローカルの授業データは残っています。");
+  }catch(error){
+    if(result){
+      result.textContent="オンライン授業データの削除に失敗しました：" + error.message;
+    }
+    alert("オンライン授業データの削除に失敗しました：" + error.message);
+  }
+}
+
+/* ===== JSON出力・読み込み ===== */
+function exportCurrentLessonJSON(){
+  if(currentLessonId===null)return;
+
+  const lesson=lessons.find(l=>l.id===currentLessonId);
+  if(!lesson)return;
+
+  save();
+
+  const data={
+    lessonName:lesson.name,
+    exportedAt:new Date().toLocaleString(),
+    lessonType:lesson.lessonType||"video",
+    videoStartTime:lesson.videoStartTime||"",
+    videoLink:lesson.videoLink||"",
+    onlineEnabled:lesson.onlineEnabled||false,
+    onlineLessonId:lesson.onlineLessonId||"",
+    lessonCode:lesson.lessonCode||"",
+    onlineParticipantName:lesson.onlineParticipantName||"",
+    creatorName:lesson.creatorName||"",
+    syncTargets:lesson.syncTargets||createDefaultSyncTargets(),
+    participants:lesson.participants||[],
+    memos:lesson.memos||[],
+    quickReactions:lesson.quickReactions||[],
+    notes:lesson.notes||[]
+  };
+
+  downloadJSON(lesson.name + ".json", data);
+}
+
+function exportAllLessonsJSON(){
+  save();
+
+  const data={
+    appName:"授業分析アプリ",
+    version:"var4.7.5",
+    exportedAt:new Date().toLocaleString(),
+    lessons:lessons
+  };
+
+  downloadJSON("all_lessons.json", data);
+}
+
+function importCurrentLessonJSON(event){
+  if(currentLessonId===null){
+    alert("授業を開いてからJSONを読み込んでください。");
+    event.target.value="";
+    return;
+  }
+
+  const file=event.target.files[0];
+  if(!file)return;
+
+  if(!confirm("現在授業JSONを読み込みます。\n\n読み込んだコメントやメモは、現在の授業に追加されます。\n同じJSONを複数回読み込むと、コメントやメモが重複する可能性があります。\n\nよろしいですか？")){
+    event.target.value="";
+    return;
+  }
+
+  const reader=new FileReader();
+
+  reader.onload=function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      const importedMemos=Array.isArray(data) ? data : data.memos;
+      const importedNotes=Array.isArray(data.notes) ? data.notes : [];
+      const importedQuickReactions=Array.isArray(data.quickReactions) ? data.quickReactions : [];
+
+      if(!Array.isArray(importedMemos)){
+        alert("読み込めるJSON形式ではありません。");
+        event.target.value="";
+        return;
+      }
+
+      const lesson=lessons.find(l=>l.id===currentLessonId);
+      if(lesson){
+        if(data.lessonType){
+          lesson.lessonType=data.lessonType;
+        }
+        if(data.videoStartTime){
+          lesson.videoStartTime=data.videoStartTime;
+          document.getElementById("videoStartTime").value=data.videoStartTime;
+        }
+        if(data.videoLink){
+          lesson.videoLink=data.videoLink;
+          document.getElementById("videoLinkInput").value=data.videoLink;
+          updateVideoLinkDisplay();
+        }
+        if(data.onlineEnabled!==undefined){
+          lesson.onlineEnabled=data.onlineEnabled;
+        }
+        if(data.onlineLessonId){
+          lesson.onlineLessonId=data.onlineLessonId;
+        }
+        if(data.lessonCode){
+          lesson.lessonCode=data.lessonCode;
+        }
+        if(data.onlineParticipantName){
+          lesson.onlineParticipantName=data.onlineParticipantName;
+        }
+        if(data.creatorName){
+          lesson.creatorName=data.creatorName;
+        }
+        if(data.syncTargets){
+          lesson.syncTargets=data.syncTargets;
+        }
+        if(Array.isArray(data.participants)){
+          lesson.participants=data.participants;
+        }
+        normalizeOnlineLessonFields(lesson);
+      }
+
+      importedMemos.forEach(m=>{
+        memos.push({
+          time:Number(m.time)||0,
+          realTime:m.realTime||"",
+          realTimestamp:Number(m.realTimestamp)||0,
+          text:m.text||"",
+          user:m.user||"",
+          phase:m.phase||"",
+          tag:m.tag||"",
+          reaction:normalizeReaction(m.reaction||""),
+          color:m.color||"",
+          replies:Array.isArray(m.replies) ? m.replies : []
+        });
+      });
+
+      importedQuickReactions.forEach(r=>{
+        quickReactions.push({
+          time:Number(r.time)||0,
+          realTime:r.realTime||"",
+          realTimestamp:Number(r.realTimestamp)||0,
+          reaction:normalizeReaction(r.reaction||"")
+        });
+      });
+
+      importedNotes.forEach(n=>{
+        notes.push({
+          title:n.title||"",
+          content:n.content||""
+        });
+        noteOpenStates.push(true);
+      });
+
+      sortMemosByTime();
+      lastIndex1=-1;
+      lastIndex2=-1;
+      save();
+      render();
+      renderNotes();
+      renderTopNote();
+      renderReactionTimeline();
+      alert("JSONデータを読み込みました。");
+    }catch(error){
+      alert("JSONの読み込みに失敗しました。");
+    }
+
+    event.target.value="";
+  };
+
+  reader.readAsText(file);
+}
+
+
+function importOnlineLessonArchiveJSON(event){
+  const file=event.target.files[0];
+  if(!file)return;
+
+  if(!confirm("オンライン退避JSONを読み込みます。\n\n読み込んだデータはFirebaseへ再アップロードせず、ローカル授業として授業一覧に追加します。\n\nよろしいですか？")){
+    event.target.value="";
+    return;
+  }
+
+  const reader=new FileReader();
+
+  reader.onload=function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+
+      if(data.archiveType!=="onlineLessonArchive"){
+        alert("オンライン退避JSON形式ではありません。");
+        event.target.value="";
+        return;
+      }
+
+      const lessonInfo=data.lessonInfo||{};
+      const importedComments=Array.isArray(data.comments) ? data.comments : [];
+      const importedQuickReactions=Array.isArray(data.quickReactions) ? data.quickReactions : [];
+
+      const restoredLesson={
+        id:Date.now(),
+        name:(data.lessonName||lessonInfo.name||"復元オンライン授業") + "（復元）",
+        lessonType:lessonInfo.lessonType||data.lessonType||"video",
+        videoStartTime:data.videoStartTime||lessonInfo.videoStartTime||"",
+        videoLink:data.videoLink||lessonInfo.videoLink||"",
+        onlineEnabled:false,
+        onlineLessonId:data.onlineLessonId||lessonInfo.onlineLessonId||lessonInfo.id||"",
+        lessonCode:data.lessonCode||lessonInfo.lessonCode||"",
+        onlineParticipantName:lessonInfo.onlineParticipantName||"",
+        creatorName:lessonInfo.creatorName||"",
+        syncTargets:lessonInfo.syncTargets||createDefaultSyncTargets(),
+        participants:Array.isArray(data.participants) ? data.participants : [],
+        memos:[],
+        quickReactions:[],
+        notes:[],
+        topNoteIndex:0,
+        topNoteIndex2:0,
+        panelOrder:[...DEFAULT_PANEL_ORDER],
+        plan:data.plan||lessonInfo.plan||"",
+        username:lessonInfo.onlineParticipantName||"",
+        favorite:false,
+        updatedAt:new Date().toLocaleString()
+      };
+
+      importedComments.forEach(m=>{
+        restoredLesson.memos.push({
+          time:Number(m.time)||0,
+          realTime:m.realTime||"",
+          realTimestamp:Number(m.realTimestamp)||0,
+          text:m.text||"",
+          user:m.user||m.participantName||"",
+          phase:m.phase||"",
+          tag:m.tag||"",
+          reaction:normalizeReaction(m.reaction||""),
+          color:m.color||"",
+          replies:Array.isArray(m.replies) ? m.replies : []
+        });
+      });
+
+      importedQuickReactions.forEach(r=>{
+        restoredLesson.quickReactions.push({
+          time:Number(r.time)||0,
+          realTime:r.realTime||"",
+          realTimestamp:Number(r.realTimestamp)||0,
+          reaction:normalizeReaction(r.reaction||""),
+          user:r.user||r.participantName||""
+        });
+      });
+
+      if(restoredLesson.lessonType==="liveRecorded" || restoredLesson.lessonType==="liveOnly"){
+        restoredLesson.memos.sort((a,b)=>(a.realTimestamp||0)-(b.realTimestamp||0));
+        restoredLesson.quickReactions.sort((a,b)=>(a.realTimestamp||0)-(b.realTimestamp||0));
+      }else{
+        restoredLesson.memos.sort((a,b)=>a.time-b.time);
+        restoredLesson.quickReactions.sort((a,b)=>a.time-b.time);
+      }
+
+      normalizeOnlineLessonFields(restoredLesson);
+      restoredLesson.onlineEnabled=false;
+
+      lessons.push(restoredLesson);
+      saveLessons();
+      renderLessons();
+      alert("オンライン退避JSONをローカル授業として復元しました。\n授業一覧から開いて確認してください。");
+    }catch(error){
+      alert("オンライン退避JSONの読み込みに失敗しました：" + error.message);
+    }
+
+    event.target.value="";
+  };
+
+  reader.readAsText(file);
+}
+
+function importAllLessonsJSON(event){
+  const file=event.target.files[0];
+  if(!file)return;
+
+  if(!confirm("全授業JSONを読み込みます。\n\n現在の授業一覧は、読み込んだJSONデータで上書きされます。\n現在保存されている授業一覧は置き換わるため、必要な場合は先に全授業JSON出力でバックアップしてください。\n\nよろしいですか？")){
+    event.target.value="";
+    return;
+  }
+
+  const reader=new FileReader();
+
+  reader.onload=function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      const importedLessons=Array.isArray(data) ? data : data.lessons;
+
+      if(!Array.isArray(importedLessons)){
+        alert("読み込める全授業JSON形式ではありません。");
+        event.target.value="";
+        return;
+      }
+
+      importedLessons.forEach(lesson=>{
+        normalizeOnlineLessonFields(lesson);
+      });
+
+      lessons=importedLessons;
+      currentLessonId=null;
+      memos=[];
+      quickReactions=[];
+      notes=[];
+      noteOpenStates=[];
+      panelOrder=[...DEFAULT_PANEL_ORDER];
+      topNoteIndex=0;
+      topNoteIndex2=0;
+      editingIndex=null;
+      lastIndex1=-1;
+      lastIndex2=-1;
+
+      saveLessons();
+
+      document.getElementById("appScreen").style.display="none";
+      document.getElementById("menuScreen").style.display="block";
+
+      renderLessons();
+      alert("全授業JSONデータを読み込みました。");
+    }catch(error){
+      alert("全授業JSONの読み込みに失敗しました。");
+    }
+
+    event.target.value="";
+  };
+
+  reader.readAsText(file);
+}
+
+/* ===== 表示切替 ===== */
+function togglePanel(id){
+  if(inputFocusMode){
+    inputFocusMode=false;
+    applyInputFocusModeLayout();
+  }
+  const el=document.getElementById(id);
+  el.style.display=(el.style.display==="none")?"block":"none";
+}
+
+/* 初期化 */
+loadLessons();
+renderTagOptions();
+renderTagSettingsEditor();
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, serverTimestamp, collection, addDoc, getDocs, query, orderBy, where, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDHU8Fr1q4vS-99BZfCv1c5Q6e87Gk-57s",
+  authDomain: "comengle.firebaseapp.com",
+  projectId: "comengle",
+  storageBucket: "comengle.firebasestorage.app",
+  messagingSenderId: "549329781751",
+  appId: "1:549329781751:web:bd0836499aceaf789da4f2"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const firestoreDb = getFirestore(firebaseApp);
+window.firebaseApp = firebaseApp;
+window.firestoreDb = firestoreDb;
+
+window.createOnlineLessonOnFirebase = async function(lessonData){
+  const lessonRef=doc(firestoreDb, "onlineLessons", lessonData.onlineLessonId);
+  const codeRef=doc(firestoreDb, "lessonCodes", lessonData.lessonCode);
+
+  await setDoc(lessonRef, {
+    ...lessonData,
+    version:"var4.7.5",
+    createdAt:serverTimestamp(),
+    cloudUpdatedAt:serverTimestamp()
+  });
+
+  await setDoc(codeRef, {
+    lessonCode:lessonData.lessonCode,
+    onlineLessonId:lessonData.onlineLessonId,
+    name:lessonData.name,
+    lessonType:lessonData.lessonType,
+    creatorName:lessonData.onlineParticipantName,
+    createdAt:serverTimestamp()
+  });
+};
+
+window.joinOnlineLessonFromFirebase = async function(code, participantName){
+  const codeRef=doc(firestoreDb, "lessonCodes", code);
+  const codeSnap=await getDoc(codeRef);
+
+  if(!codeSnap.exists()){
+    throw new Error("授業コードが見つかりません。");
+  }
+
+  const codeData=codeSnap.data();
+  const onlineLessonId=codeData.onlineLessonId;
+
+  if(!onlineLessonId){
+    throw new Error("授業コードに対応する授業IDが見つかりません。");
+  }
+
+  const lessonRef=doc(firestoreDb, "onlineLessons", onlineLessonId);
+  const lessonSnap=await getDoc(lessonRef);
+
+  if(!lessonSnap.exists()){
+    throw new Error("対応するオンライン授業データが見つかりません。");
+  }
+
+  const lessonData=lessonSnap.data();
+
+  return {
+    ...lessonData,
+    onlineLessonId,
+    lessonCode:codeData.lessonCode||code,
+    joinedParticipantName:participantName
+  };
+};
+
+
+window.addOnlineCommentToFirebase = async function(onlineLessonId, commentData){
+  const commentsRef=collection(firestoreDb, "onlineLessons", onlineLessonId, "comments");
+  const docRef=await addDoc(commentsRef, {
+    ...commentData,
+    cloudCreatedAt:serverTimestamp()
+  });
+  return docRef.id;
+};
+
+window.updateOnlineCommentReactionToFirebase = async function(onlineLessonId, commentId, reaction){
+  const commentRef=doc(firestoreDb, "onlineLessons", onlineLessonId, "comments", commentId);
+  await updateDoc(commentRef, {
+    reaction:reaction||"",
+    cloudUpdatedAt:serverTimestamp()
+  });
+};
+
+window.deleteOnlineCommentFromFirebase = async function(onlineLessonId, commentId){
+  const commentRef=doc(firestoreDb, "onlineLessons", onlineLessonId, "comments", commentId);
+  await deleteDoc(commentRef);
+};
+
+window.addOnlineQuickReactionToFirebase = async function(onlineLessonId, reactionData){
+  const reactionsRef=collection(firestoreDb, "onlineLessons", onlineLessonId, "quickReactions");
+  await addDoc(reactionsRef, {
+    ...reactionData,
+    cloudCreatedAt:serverTimestamp()
+  });
+};
+
+window.listenOnlineCommentsFromFirebase = function(onlineLessonId, onSuccess, onError){
+  const commentsRef=collection(firestoreDb, "onlineLessons", onlineLessonId, "comments");
+  const commentsQuery=query(commentsRef, orderBy("sortTimestamp", "asc"));
+
+  return onSnapshot(commentsQuery, snapshot=>{
+    const comments=[];
+    snapshot.forEach(docSnap=>{
+      const data=docSnap.data();
+      comments.push({
+        id:docSnap.id,
+        time:Number(data.time)||0,
+        realTime:data.realTime||"",
+        realTimestamp:Number(data.realTimestamp)||0,
+        text:data.text||"",
+        user:data.user||data.participantName||"",
+        participantName:data.participantName||data.user||"",
+        phase:data.phase||"",
+        tag:data.tag||"",
+        reaction:data.reaction||"",
+        color:data.color||"",
+        replies:Array.isArray(data.replies) ? data.replies : []
+      });
+    });
+    onSuccess(comments);
+  }, error=>{
+    if(onError){
+      onError(error);
+    }
+  });
+};
+
+window.listenOnlineCommentsAfterFromFirebase = function(onlineLessonId, afterSortTimestamp, onSuccess, onError){
+  const commentsRef=collection(firestoreDb, "onlineLessons", onlineLessonId, "comments");
+  const commentsQuery=query(commentsRef, where("sortTimestamp", ">", Number(afterSortTimestamp)||0), orderBy("sortTimestamp", "asc"));
+
+  return onSnapshot(commentsQuery, snapshot=>{
+    const comments=[];
+    snapshot.forEach(docSnap=>{
+      const data=docSnap.data();
+      comments.push({
+        id:docSnap.id,
+        time:Number(data.time)||0,
+        realTime:data.realTime||"",
+        realTimestamp:Number(data.realTimestamp)||0,
+        text:data.text||"",
+        user:data.user||data.participantName||"",
+        participantName:data.participantName||data.user||"",
+        phase:data.phase||"",
+        tag:data.tag||"",
+        reaction:data.reaction||"",
+        color:data.color||"",
+        replies:Array.isArray(data.replies) ? data.replies : []
+      });
+    });
+    onSuccess(comments);
+  }, error=>{
+    if(onError){
+      onError(error);
+    }
+  });
+};
+
+window.listenOnlineReactionsFromFirebase = function(onlineLessonId, onSuccess, onError){
+  const reactionsRef=collection(firestoreDb, "onlineLessons", onlineLessonId, "quickReactions");
+  const reactionsQuery=query(reactionsRef, orderBy("sortTimestamp", "asc"));
+
+  return onSnapshot(reactionsQuery, snapshot=>{
+    const reactions=[];
+    snapshot.forEach(docSnap=>{
+      const data=docSnap.data();
+      reactions.push({
+        id:docSnap.id,
+        time:Number(data.time)||0,
+        realTime:data.realTime||"",
+        realTimestamp:Number(data.realTimestamp)||0,
+        reaction:data.reaction||"",
+        user:data.user||data.participantName||""
+      });
+    });
+    onSuccess(reactions);
+  }, error=>{
+    if(onError){
+      onError(error);
+    }
+  });
+};
+
+window.listenOnlineReactionsAfterFromFirebase = function(onlineLessonId, afterSortTimestamp, onSuccess, onError){
+  const reactionsRef=collection(firestoreDb, "onlineLessons", onlineLessonId, "quickReactions");
+  const reactionsQuery=query(reactionsRef, where("sortTimestamp", ">", Number(afterSortTimestamp)||0), orderBy("sortTimestamp", "asc"));
+
+  return onSnapshot(reactionsQuery, snapshot=>{
+    const reactions=[];
+    snapshot.forEach(docSnap=>{
+      const data=docSnap.data();
+      reactions.push({
+        id:docSnap.id,
+        time:Number(data.time)||0,
+        realTime:data.realTime||"",
+        realTimestamp:Number(data.realTimestamp)||0,
+        reaction:data.reaction||"",
+        user:data.user||data.participantName||""
+      });
+    });
+    onSuccess(reactions);
+  }, error=>{
+    if(onError){
+      onError(error);
+    }
+  });
+};
+
+window.updateOnlinePlanToFirebase = async function(onlineLessonId, plan){
+  const lessonRef=doc(firestoreDb, "onlineLessons", onlineLessonId);
+  await setDoc(lessonRef, {
+    plan:plan||"",
+    cloudUpdatedAt:serverTimestamp()
+  }, {merge:true});
+};
+
+window.listenOnlinePlanFromFirebase = function(onlineLessonId, onSuccess, onError){
+  const lessonRef=doc(firestoreDb, "onlineLessons", onlineLessonId);
+
+  return onSnapshot(lessonRef, snapshot=>{
+    if(snapshot.exists()){
+      const data=snapshot.data();
+      onSuccess(data.plan||"");
+    }
+  }, error=>{
+    if(onError){
+      onError(error);
+    }
+  });
+};
+
+window.updateOnlineVideoInfoToFirebase = async function(onlineLessonId, videoInfo){
+  const lessonRef=doc(firestoreDb, "onlineLessons", onlineLessonId);
+  await setDoc(lessonRef, {
+    videoLink:videoInfo.videoLink||"",
+    videoStartTime:videoInfo.videoStartTime||"",
+    cloudUpdatedAt:serverTimestamp()
+  }, {merge:true});
+};
+
+window.listenOnlineVideoInfoFromFirebase = function(onlineLessonId, onSuccess, onError){
+  const lessonRef=doc(firestoreDb, "onlineLessons", onlineLessonId);
+
+  return onSnapshot(lessonRef, snapshot=>{
+    if(snapshot.exists()){
+      const data=snapshot.data();
+      onSuccess({
+        videoLink:data.videoLink||"",
+        videoStartTime:data.videoStartTime||""
+      });
+    }
+  }, error=>{
+    if(onError){
+      onError(error);
+    }
+  });
+};
+
+window.updateOnlineTagSettingsToFirebase = async function(onlineLessonId, settings){
+  const lessonRef=doc(firestoreDb, "onlineLessons", onlineLessonId);
+  await setDoc(lessonRef, {
+    tagSettings:Array.isArray(settings) ? settings : [],
+    cloudUpdatedAt:serverTimestamp()
+  }, {merge:true});
+};
+
+window.listenOnlineTagSettingsFromFirebase = function(onlineLessonId, onSuccess, onError){
+  const lessonRef=doc(firestoreDb, "onlineLessons", onlineLessonId);
+
+  return onSnapshot(lessonRef, snapshot=>{
+    if(snapshot.exists()){
+      const data=snapshot.data();
+      onSuccess(Array.isArray(data.tagSettings) ? data.tagSettings : []);
+    }
+  }, error=>{
+    if(onError){
+      onError(error);
+    }
+  });
+};
+
+window.registerOnlineParticipantToFirebase = async function(onlineLessonId, participantDocId, participantData){
+  const participantRef=doc(firestoreDb, "onlineLessons", onlineLessonId, "participants", participantDocId);
+  const nowMillis=Date.now();
+  await setDoc(participantRef, {
+    name:participantData.name||"名前なし",
+    role:participantData.role||"participant",
+    active:true,
+    joinedAtText:new Date().toLocaleString(),
+    updatedAtText:new Date().toLocaleString(),
+    lastSeenAtMillis:nowMillis,
+    lastSeenAt:serverTimestamp()
+  }, {merge:true});
+};
+
+window.removeOnlineParticipantFromFirebase = async function(onlineLessonId, participantDocId){
+  if(!onlineLessonId || !participantDocId)return;
+  try{
+    const participantRef=doc(firestoreDb, "onlineLessons", onlineLessonId, "participants", participantDocId);
+    await deleteDoc(participantRef);
+  }catch(error){
+    console.warn("参加者情報の削除に失敗しました", error);
+  }
+};
+
+window.listenOnlineParticipantsFromFirebase = function(onlineLessonId, onSuccess, onError){
+  const participantsRef=collection(firestoreDb, "onlineLessons", onlineLessonId, "participants");
+
+  return onSnapshot(participantsRef, snapshot=>{
+    const participants=[];
+    snapshot.forEach(docSnap=>{
+      const data=docSnap.data();
+      participants.push({
+        id:docSnap.id,
+        name:data.name||"名前なし",
+        role:data.role||"participant",
+        active:data.active!==false,
+        joinedAtText:data.joinedAtText||"",
+        updatedAtText:data.updatedAtText||"",
+        lastSeenAtMillis:Number(data.lastSeenAtMillis)||0,
+        lastSeenAt:data.lastSeenAt||null
+      });
+    });
+    participants.sort((a,b)=>(a.name||"").localeCompare(b.name||"", "ja"));
+    onSuccess(participants);
+  }, error=>{
+    if(onError){
+      onError(error);
+    }
+  });
+};
+
+window.addEventListener("beforeunload", ()=>{
+  const lesson=window.currentLessonForBeforeUnload;
+  if(lesson && lesson.onlineLessonId && window.removeOnlineParticipantFromFirebase && window.onlineParticipantDocIdForBeforeUnload){
+    window.removeOnlineParticipantFromFirebase(lesson.onlineLessonId, window.onlineParticipantDocIdForBeforeUnload);
+  }
+});
+
+window.fetchOnlineLessonArchiveFromFirebase = async function(onlineLessonId){
+  const lessonRef=doc(firestoreDb, "onlineLessons", onlineLessonId);
+  const lessonSnap=await getDoc(lessonRef);
+
+  if(!lessonSnap.exists()){
+    throw new Error("オンライン授業データが見つかりません。");
+  }
+
+  const lessonData=lessonSnap.data();
+
+  const commentsSnap=await getDocs(query(collection(firestoreDb, "onlineLessons", onlineLessonId, "comments"), orderBy("sortTimestamp", "asc")));
+  const comments=[];
+  commentsSnap.forEach(docSnap=>{
+    comments.push({id:docSnap.id, ...docSnap.data()});
+  });
+
+  const reactionsSnap=await getDocs(query(collection(firestoreDb, "onlineLessons", onlineLessonId, "quickReactions"), orderBy("sortTimestamp", "asc")));
+  const quickReactions=[];
+  reactionsSnap.forEach(docSnap=>{
+    quickReactions.push({id:docSnap.id, ...docSnap.data()});
+  });
+
+  const participantsSnap=await getDocs(collection(firestoreDb, "onlineLessons", onlineLessonId, "participants"));
+  const participants=[];
+  participantsSnap.forEach(docSnap=>{
+    participants.push({id:docSnap.id, ...docSnap.data()});
+  });
+
+  return {
+    lessonInfo:{id:onlineLessonId, ...lessonData},
+    comments,
+    quickReactions,
+    plan:lessonData.plan||"",
+    videoLink:lessonData.videoLink||"",
+    videoStartTime:lessonData.videoStartTime||"",
+    participants
+  };
+};
+
+async function deleteCollectionDocuments(collectionRef){
+  const snap=await getDocs(collectionRef);
+  const deletes=[];
+  snap.forEach(docSnap=>{
+    deletes.push(deleteDoc(docSnap.ref));
+  });
+  await Promise.all(deletes);
+}
+
+window.deleteOnlineLessonFromFirebase = async function(onlineLessonId, lessonCode){
+  if(!onlineLessonId){
+    throw new Error("Firestore授業IDがありません。");
+  }
+
+  await deleteCollectionDocuments(collection(firestoreDb, "onlineLessons", onlineLessonId, "comments"));
+  await deleteCollectionDocuments(collection(firestoreDb, "onlineLessons", onlineLessonId, "quickReactions"));
+  await deleteCollectionDocuments(collection(firestoreDb, "onlineLessons", onlineLessonId, "participants"));
+
+  if(lessonCode){
+    await deleteDoc(doc(firestoreDb, "lessonCodes", lessonCode));
+  }
+
+  await deleteDoc(doc(firestoreDb, "onlineLessons", onlineLessonId));
+};
+
+window.testFirebaseConnection = async function(){
+  const result=document.getElementById("firebaseTestResult");
+  if(result){
+    result.textContent="Firebase接続テスト中...";
+  }
+
+  try{
+    const testId="test_" + Date.now();
+    const testRef=doc(firestoreDb, "connectionTests", testId);
+
+    await setDoc(testRef, {
+      appName:"授業分析アプリ",
+      version:"var4.7.5",
+      testMessage:"Firebase connection test",
+      createdAt:serverTimestamp()
+    });
+
+    const snap=await getDoc(testRef);
+
+    if(snap.exists()){
+      if(result){
+        result.textContent="Firebase接続テスト成功：書き込み・読み込みができました。";
+      }else{
+        alert("Firebase接続テスト成功：書き込み・読み込みができました。");
+      }
+    }else{
+      if(result){
+        result.textContent="Firebase接続テスト失敗：読み込み結果が見つかりません。";
+      }else{
+        alert("Firebase接続テスト失敗：読み込み結果が見つかりません。");
+      }
+    }
+  }catch(error){
+    if(result){
+      result.textContent="Firebase接続テスト失敗：" + error.message;
+    }else{
+      alert("Firebase接続テスト失敗：" + error.message);
+    }
+  }
+};
+
+</script>
+
+</body>
+</html>
